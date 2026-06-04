@@ -11,6 +11,7 @@
   <p>For a detailed explanation of all the nodes and available properties, see the official documentation here: 
 
     <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/flight_model_cfg.htm#FUEL_SYSTEM">docs.flightsimulator.com (flight_model.cfg)</a>
+    
     <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/systems_cfg.htm#FUEL_SYSTEM">docs.flightsimulator.com (systems.cfg)</a>
   </p>
 
