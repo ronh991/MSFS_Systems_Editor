@@ -1054,6 +1054,10 @@ export default {
       if (savedData) {
         try{
           editor.value.import(JSON.parse(savedData));
+          // if there are nodes diable the sysID dropdowm
+          if (savedData.drawflow !== undefined) {
+            issysIDDisabled.value = true;
+          }
         }
         catch(e){
           localStorage.setItem('fuelSystemGraph', '');
@@ -1061,11 +1065,6 @@ export default {
         // console.error(savedData)
       }
 
-      // if there are nodes diable the sysID dropdowm
-
-      if (savedData.drawflow !== undefined) {
-        issysIDDisabled.value = true;
-      }
 
       // Restore the lineComponentNodeNames
 
