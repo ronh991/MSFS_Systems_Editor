@@ -1,0 +1,234 @@
+:root {
+    --mainPath: rgb(96, 166, 46);
+    --selected: rgb(220, 220, 220);
+
+    --bknd: #303030;
+
+    --tank-color: #50781f;
+    --ramair-color: #50781f;
+    --pump-color: #9e8d2c;
+    --junction-color:#0c5a87;
+    --valve-color: #5b2e73;
+    --engine-color: #7d1919;
+    --curve-color: #2b7778;
+    --apu-color: #826012;
+    --accumulator-color: #82a012;
+    --mixerunit-color: #c26012;
+    --trigger-color: #04067ab0;
+    --burner-color: #e34f00;
+    --area-color: #134f00;
+    --pack-color: #3d3975;
+    --outlet-color: #4d061b;
+    --fan-color: #052b07;
+    --burner-color: #e23617;
+    --burnervalve-color: #e99931;
+    --circuit-color: #50781f;
+    --generator-color: #50781f;
+    --battery-color: #9e8d2c;
+    --externalpower-color:#0c5a87;
+    --bus-color: #5b2e73;
+    --relay-color: #7d1919;
+    --suppliercfg-color: #826012;
+    --consumercfg-color: #82a012;
+    --connection-color: #c26012;
+    --breaker-color: #7a041f;
+    --actuator-color: #06134d;
+    --transformer-color: #e34f00;
+    --diode-color: #134f00;
+}
+
+
+.drawflow .drawflow-node {
+    border-radius: 8px;
+    background: var(--bknd);
+    border: 2px solid #494949;
+    color: white;
+    min-width: 290px;
+}
+
+.drawflow .drawflow-node.selected {
+    background: var(--bknd);
+    border: 2px solid var(--selected);
+}
+
+.drawflow .drawflow-node .input, .drawflow .drawflow-node .output {
+    background: #181818;
+    border: 3px solid #494949;
+    width: 20px;
+    height: 20px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+
+.drawflow .drawflow-node .input {
+    left: -45px;
+}
+
+.drawflow .drawflow-node .output {
+    right: -27px;
+}
+
+.drawflow .drawflow-node .output:hover, .drawflow .drawflow-node .input:hover {
+    background: #494949;
+    border: 3px solid var(--selected);
+}
+
+.drawflow .connection .main-path {
+    stroke-width: 3px;
+    stroke: var(--mainPath);
+}
+
+.drawflow .connection .main-path:hover {
+    stroke: var(--selected);
+}
+
+.parent-node .drawflow-delete {
+    display: none !important;
+}
+
+.drawflow .drawflow-node .drawflow_content_node {
+    background: var(--bknd);
+}
+
+.drawflow .drawflow-node.FTank .drawflow_content_node .header {
+  background: var(--tank-color);
+}
+.drawflow .drawflow-node.FPump .drawflow_content_node .header  {
+  background: var(--pump-color);
+}
+.drawflow .drawflow-node.HPump .drawflow_content_node .header  {
+  background: var(--pump-color);
+}
+.drawflow .drawflow-node.FJunction .drawflow_content_node .header  {
+  background: var(--junction-color);
+}
+.drawflow .drawflow-node.HJunction .drawflow_content_node .header  {
+  background: var(--junction-color);
+}
+.drawflow .drawflow-node.PJunction .drawflow_content_node .header  {
+  background: var(--junction-color);
+}
+.drawflow .drawflow-node.FValve .drawflow_content_node .header  {
+  background: var(--valve-color);
+}
+.drawflow .drawflow-node.HValve .drawflow_content_node .header  {
+  background: var(--valve-color);
+}
+.drawflow .drawflow-node.PValve .drawflow_content_node .header  {
+  background: var(--valve-color);
+}
+.drawflow .drawflow-node.FEngine .drawflow_content_node .header  {
+  background: var(--engine-color);
+}
+.drawflow .drawflow-node.PEngine .drawflow_content_node .header  {
+  background: var(--engine-color);
+}
+.drawflow .drawflow-node.Circuit .drawflow_content_node .header {
+  background: var(--circuit-color);
+}
+.drawflow .drawflow-node.Generator .drawflow_content_node .header  {
+  background: var(--generator-color);
+}
+.drawflow .drawflow-node.ExternalPower .drawflow_content_node .header  {
+  background: var(--externalpower-color);
+}
+.drawflow .drawflow-node.Battery .drawflow_content_node .header  {
+  background: var(--battery-color);
+}
+.drawflow .drawflow-node.Bus .drawflow_content_node .header  {
+  background: var(--bus-color);
+}
+.drawflow .drawflow-node.Relay .drawflow_content_node .header  {
+  background: var(--relay-color);
+}
+.drawflow .drawflow-node.SupplierCfg .drawflow_content_node .header  {
+  background: var(--suppliercfg-color);
+}
+.drawflow .drawflow-node.ConsumerCfg .drawflow_content_node .header  {
+  background: var(--consumercfg-color);
+}
+.drawflow .drawflow-node.Connection .drawflow_content_node .header  {
+  background: var(--connection-color);
+}
+.drawflow .drawflow-node.Breaker .drawflow_content_node .header  {
+  background: var(--breaker-color);
+}
+.drawflow .drawflow-node.Transformer .drawflow_content_node .header  {
+  background: var(--transformer-color);
+}
+.drawflow .drawflow-node.Diode .drawflow_content_node .header  {
+  background: var(--diode-color);
+}
+.drawflow .drawflow-node.Curve .drawflow_content_node .header  {
+  background: var(--curve-color);
+}
+.drawflow .drawflow-node.FTrigger .drawflow_content_node .header  {
+  background: var(--trigger-color);
+}
+.drawflow .drawflow-node.Burner .drawflow_content_node .header  {
+  background: var(--trigger-color);
+}
+.drawflow .drawflow-node.Area .drawflow_content_node .header  {
+  background: var(--area-color);
+}
+.drawflow .drawflow-node.FAPU .drawflow_content_node .header  {
+  background: var(--apu-color);
+}
+.drawflow .drawflow-node.PAPU .drawflow_content_node .header  {
+  background: var(--apu-color);
+}
+.drawflow .drawflow-node.RamAir .drawflow_content_node .header  {
+  background: var(--ramair-color);
+}
+.drawflow .drawflow-node.MixerUnit .drawflow_content_node .header  {
+  background: var(--mixerunit-color);
+}
+.drawflow .drawflow-node.Pack .drawflow_content_node .header  {
+  background: var(--pack-color);
+}
+.drawflow .drawflow-node.Outlet .drawflow_content_node .header  {
+  background: var(--outlet-color);
+}
+.drawflow .drawflow-node.Fan .drawflow_content_node .header  {
+  background: var(--fan-color);
+}
+.drawflow .drawflow-node.Burner .drawflow_content_node .header  {
+  background: var(--burner-color);
+}
+.drawflow .drawflow-node.BValve .drawflow_content_node .header  {
+  background: var(--burnervalve-color);
+}
+.drawflow .drawflow-node.Actuator .drawflow_content_node .header  {
+  background: var(--actuator-color);
+}
+.drawflow .drawflow-node.Reservoir .drawflow_content_node .header  {
+  background: var(--tank-color);
+}
+.drawflow .drawflow-node.PTU .drawflow_content_node .header  {
+  background: var(--apu-color);
+}
+.drawflow .drawflow-node.FAPU .drawflow_content_node .header  {
+  background: var(--apu-color);
+}
+
+
+.drawflow .drawflow-node.selected .drawflow_content_node .header {
+    background:var(--selected);
+    color:  black;
+}
+
+
+
+
+.drawflow .drawflow-node .drawflow_content_node input, .drawflow .drawflow-node .drawflow_content_node .el-select {
+    width: 100%; 
+}
+
+.el-drawer__body {
+    color: black;
+}
+
+.drawflow .drawflow-node .drawflow_content_node .el-form-item {
+    margin-bottom: 0;
+}
+
