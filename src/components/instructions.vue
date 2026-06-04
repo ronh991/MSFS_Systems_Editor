@@ -11,7 +11,9 @@
   <p>For a detailed explanation of all the nodes and available properties, see the official documentation here: 
 
     <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/flight_model_cfg.htm#FUEL_SYSTEM">docs.flightsimulator.com (flight_model.cfg)</a>
-    
+  </p>
+  <p>
+
     <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/systems_cfg.htm#FUEL_SYSTEM">docs.flightsimulator.com (systems.cfg)</a>
   </p>
 
@@ -29,7 +31,9 @@
 
   <h2><strong>Node Properties and Connections</strong></h2>
 
-  <p>To understand the purpose of the node properties, you will need to refer to the <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/flight_model_cfg.htm#FUEL_SYSTEM">Official Documentation</a> but some the following nodes have some special features requiring explanation.</p>
+  <p>To understand the purpose of the node properties, you will need to refer to the <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/flight_model_cfg.htm#FUEL_SYSTEM"> Fuel System Official Documentation</a> and <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/systems_cfg.htm"> Systems.cfg Systems Official Documentation</a> but some the following nodes have some special features requiring explanation.</p>
+
+  <div v-if="linesysID == 0">
 
   <p>The Junction node is the only node that can have multiple connections into or out of it. ALL other nodes can have at most one input and one ouput. The interface does allows you to connect two lines into one input but this will not create a valid final output.</p>
 
@@ -38,8 +42,23 @@
   <p>The Options property of the Junction node allows you to join any inputs to ouputs and also switch which groups are used at a time. These are select drop-downs listing all the connected lines.</p>
 
   <p>Each line can be configured to be one-way flow. When unchecked, fuel can flow between lines.</p>
+  </div>
+
+  <div  v-if="linesysID == 1">
+
+  <p>The Bus node is the only node that can have multiple connections into or out of it. ALL other nodes can have at most one input and one ouput. The interface does allows you to connect two lines into one input but this will not create a valid final output.</p>
+
+  <p>When you connect to the input of a Bus, it will create a new input port and continue to do so for as many inputs as needed. The same is true for ouputs.</p>
+
+  <p>Nodes without an input or output are used in other nodes and can be selected as components in Connection nodes.  These are typically Breaker, Transformer, Diodes and Relays</p>
+
+  </div>
+
+  <div  v-if="linesysID == 0 || linesysID == 1 || linesysID == 2 ">
 
   <p>The Curve node requires a formatted property. The Params expects a list of x:y coordinates. (<code>0:0, 0.5:0.5, 1:1</code>). If you enter a valid list of coordinates, it should draw a representation of that curve. The Curve node does not have a line connection, it is referenced in a Pump node.</p>
+
+  </div>
 
   <p>Lines use a special handling routine. The get automatically created as you connect nodes and their name will update as you change the node Names. Lines can have properties and these are accessed by clicking a line or the gear icon in the list to open a sidebar popup. These properties are specific to the exact Line name so if you rename a line, you will need to reenter the properties.</p>
 
@@ -51,7 +70,7 @@
 
   <p>The Import dialog offers a place to paste either a Node type or Config type block of text. When you import a Config block, the nodes will be connected but the order and position will requires some re-positioning to be more useful.</p>
 
-  <p>Sal1800</p> 
+  <p>ronh991 GS614</p> 
 
 
 </div>
@@ -59,13 +78,31 @@
 <script>
 
 import '../assets/style.css' 
-import { h, render, ref,} from 'vue'
+import { defineComponent, h, onMounted, render, ref, nextTick, watchEffect, } from 'vue'
 
 
 export default {
+  props: [
+      'sysID'
+  ],
   name: 'instructions',
-  setup() {
+  setup(props) {
+    const linesysID = ref(0);
+    const name = ref('instructions')
 
+    watchEffect(() => {
+        linesysID.value  = props.sysID;          
+
+    });
+    
+    onMounted(async () => {
+        await nextTick()
+        linesysID.value  = props.sysID;          
+    });
+
+    return { linesysID
+
+    }
   }
 }
 

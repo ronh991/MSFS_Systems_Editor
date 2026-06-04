@@ -127,7 +127,7 @@
     title="Instructions"
     width="850"
   >
-    <instructions></instructions>
+    <instructions :sysID=systype.sysID></instructions>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="instructionsDialog = false">Close</el-button>
