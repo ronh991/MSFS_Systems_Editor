@@ -101,7 +101,7 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 helper.checkmultiselected(dataNode.value.data.managedareas, managedareasList, managedareas, df, nodeId, { managedareas: managedareas.value, ...dataNode.value.data }, dataNode);
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     circuit: circuit.value || '',
                     typicalflow: typicalflow.value || '',
                     volume: volume.value || '',

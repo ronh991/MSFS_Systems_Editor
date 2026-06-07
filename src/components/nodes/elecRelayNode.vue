@@ -83,56 +83,15 @@ export default defineComponent({
             if (props.lineList !== undefined) {
                 lineList.value = props.lineList.value;
             }
-            //const exportdata = df.value.export();
-                // don't need to get inputs just line data
-            // const df_inputs = df.drawflow.drawflow.Home.data;
-            // let inputs = [];
-            // Object.entries(df_inputs).forEach(([key,node]) => {
-            // const inp = getConnections(node.inputs);
-            // inp.forEach( i => {
-            //     const src = df_inputs[i.node];
-            //     const srcName = src.data.itemname || src.data.name ;
-            //     const dest = df_inputs[key];
-            //     const destName = dest.data.itemname || dest.data.name;
-            //     const name = `${srcName}to${destName}`;
-            //     //const lineProperties = getLineListProperties(name) || {};
-            //     const line1 = {
-            //     name:name,
-            //     index: inputs.length +1,
-            //     }
-            //     inputs.push(line1);
-            // });
-            // });
-            // if (inputs) {
-            //     lineList.value = inputs;
-            // }
-            //setmanagedLineOption();
             setAllParameters();
         }
-
-        // drawflow connections - MSFS lines end points
-        // function getConnections(obj) {
-        //     const connections = [];
-        //     Object.entries(obj).forEach(([key, val]) => {
-        //         if (val.connections && Array.isArray(val.connections)) {
-        //             val.connections.forEach(connection => {
-        //                 if (connection.node) {
-        //                     connections.push({
-        //                         ...connection,
-        //                     });                            
-        //                 } 
-        //             });
-        //         }
-        //     });
-        //     return connections;
-        // }
 
         const setAllParameters = () => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 helper.checkmultiselected(dataNode.value.data.managedline, lineList, managedline, df, nodeId, { managedline: managedline.value, ...dataNode.value.data }, dataNode);
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     managedline: managedline.value || '',
                     resistance: resistance.value || '',
                     tensionthreshold: tensionthreshold.value || '',

@@ -4,7 +4,7 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.92.0)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.93.0)</el-button>
       </div>
       <div>System Selected
           <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" placeholder="NONE Selected" style="width: 240px">

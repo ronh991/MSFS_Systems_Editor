@@ -75,7 +75,7 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 //helper.checkselected(dataNode.value.data.bleedcurve, curveList, bleedcurve, df, nodeId, {bleedcurve: bleedcurve.value, ...dataNode.value.data});
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     volume: volume.value || '',
                     bleed: bleed.value || '',
                     ambient: ambient.value || '',

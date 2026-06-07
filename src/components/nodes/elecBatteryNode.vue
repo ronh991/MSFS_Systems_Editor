@@ -285,7 +285,7 @@ export default defineComponent({
                 helper.checkmultiselected(dataNode.value.data.consumerCfg, consumerList, consumerCfg, df, nodeId, { consumerCfg: consumerCfg.value, ...dataNode.value.data }, dataNode);
                 helper.checkmultiselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data }, dataNode);
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     supplierCfg: supplierCfg.value || '',
                     consumerCfg: consumerCfg.value || '',
                     amperage: amperage.value || '',

@@ -178,7 +178,7 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 helper.checkmultiselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data }, dataNode);
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     supplierCfg: supplierCfg.value || '',
                     vrms: vrms.value || '',
                     phase: phase.value || '',

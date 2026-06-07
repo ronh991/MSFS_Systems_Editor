@@ -113,7 +113,7 @@ export default defineComponent({
         const setAllParameters = () => {
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     ...dataNode.value.data };
                 df.updateNodeDataFromId(nodeId.value, data);
             }

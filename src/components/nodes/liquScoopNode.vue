@@ -72,7 +72,7 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 helper.checkselected(dataNode.value.data.curverate, curveList, curverate, df, nodeId, {curverate: curverate.value, ...dataNode.value.data});
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     fixedrate: fixedrate.value || '',
                     contactpoint: contactpoint.value || '',
                     curverate: curverate.value || '',

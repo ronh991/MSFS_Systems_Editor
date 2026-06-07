@@ -95,7 +95,7 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 helper.checkselected(dataNode.value.data.curve, curveList, curve, df, nodeId, {curve: curve.value, ...dataNode.value.data});
                 const data = {
-                    itemname: itemname.value || dataNode.value.data.name,
+                    itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
                     capacity: capacity.value || '',
                     unusuablecapacity: unusuableCapacity.value || '',
