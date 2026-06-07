@@ -42,6 +42,7 @@
   <p>The Options property of the Junction node allows you to join any inputs to ouputs and also switch which groups are used at a time. These are select drop-downs listing all the connected lines.</p>
 
   <p>Each line can be configured to be one-way flow. When unchecked, fuel can flow between lines.</p>
+
   </div>
 
   <div  v-if="linesysID == 1">
@@ -60,7 +61,24 @@
 
   </div>
 
-  <p>Lines use a special handling routine. The get automatically created as you connect nodes and their name will update as you change the node Names. Lines can have properties and these are accessed by clicking a line or the gear icon in the list to open a sidebar popup. These properties are specific to the exact Line name so if you rename a line, you will need to reenter the properties.</p>
+  <div>
+
+  <br/>
+
+  <p>Lines use a special handling routine. The get automatically created as you connect nodes and their name will update as you change the node Names. Lines can have properties and these are accessed by clicking a line or the gear icon in the list to open a sidebar popup. These properties are specific to the exact Line name so if you rename a node, you will not need to reenter the properties. (Caution - Verify each Line). </p>
+<br/>
+  <p>Ensure you read the SDK pertaining to the system you have selected. There are numerous differences between systems and how they are exported to the cfg files. </p>
+
+  <br/>
+  </div>
+
+  <div  v-if="linesysID == 2 ">
+
+  <p> Input and Output node names are automatically set in the Lines data. Hydraulics lines are a special line set-up.  Two Black-Box nodes - Combiner and Separator are used to combine lines together from many nodes (Pumps, Junctions and Reservoirs) and then separate them out to many nodes (Actuators, Junctions).  These nodes will not appear in the cfg export and are used to merge lines together and help with Line naming for multi-node naming. Only the Combiner-Separator line is show in the list.  You add any data required for ALL those lines in that line data dialog. </p>
+  
+  <br />
+  <p>PTU - Power Transfer Unit nodes are set with specific node inputs (Pump Input (PI), Motor Input(MI)) and outputs (Pump Output(PO), Pump Relief(PR), Motor Output(MO) and Motor Relief(MR)) - see the SDK for more information on PTU's</p>
+</div>
 
   <h2><strong>Import, Export and Saving</strong></h2>
 
