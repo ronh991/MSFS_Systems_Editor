@@ -12,9 +12,11 @@
             <el-form-item label="<= MI Norm Pres MO =>" label-position="left">
                 <el-input v-model="normalpresure" df-normalpresure size="small"></el-input>
             </el-form-item>
+            <el-form-item label="MR =>" label-position="right"></el-form-item>
             <el-form-item label="<= PI Nom Disp PO =>" label-position="left">
                 <el-input v-model="nominaldisplacement" df-nominaldisplacement size="small"></el-input>
             </el-form-item>
+            <el-form-item label="PR =>" label-position="right"></el-form-item>
             <el-form-item label="Reverse" label-position="left">
                   <el-switch
                     v-model="reversible"
@@ -63,6 +65,8 @@ export default defineComponent({
             });
         }
 
+        df = getCurrentInstance().appContext.config.globalProperties.$df.value;
+
         const setAllParameters = () => {
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 const data = {
@@ -76,15 +80,11 @@ export default defineComponent({
             }
         }
 
-        df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-
         onMounted(async () => {
             await nextTick()
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            //df.on('nodeCreated', setAllParameters);
-            //df.on('nodeRemoved', setAllParameters);
             df.on('nodeDataChanged', setAllParameters);           
             
             itemindex.value = dataNode.value.data.index;

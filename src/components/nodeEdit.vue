@@ -47,8 +47,8 @@
           <div class="list">
             Lines:
             <div class="line-items" v-for="line in lineList" :key="line.Name">
-              <div class="edit-line" :class="{active: line.data.itemname}" @click="showLine(line.name)"><el-icon><Setting /></el-icon></div>
-              <div class="line-name">{{line.name}}</div>
+              <div v-if="line.showinList" class="edit-line" :class="{active: line.data.itemname}" @click="showLine(line.name)"><el-icon><Setting /></el-icon></div>
+              <div v-if="line.showinList" class="line-name">{{line.name}}</div>
             </div>
           </div>
         </div>
@@ -183,6 +183,8 @@ import hydrReservoirNode from './nodes/hydrReservoirNode.vue'
 import hydrPumpNode from './nodes/hydrPumpNode.vue'
 import hydrPTUNode from './nodes/hydrPTUNode.vue'
 import hydrJunctionNode from './nodes/hydrJunctionNode.vue'
+import hydrCombinerNode from './nodes/hydrCombinerNode.vue'
+import hydrSeparatorNode from './nodes/hydrSeparatorNode.vue'
 import hydrActuatorNode from './nodes/hydrActuatorNode.vue'
 import hydrAccumulatorNode from './nodes/hydrAccumulatorNode.vue'
 import hydrTriggerNode from './nodes/hydrTriggerNode.vue'
@@ -450,6 +452,18 @@ export default {
             item: 'HValve',
             input:0,
             output:0,
+        },
+        {
+            name: 'Combiner',
+            item: 'HCombiner',
+            input:1,
+            output:1,
+        },
+        {
+            name: 'Separator',
+            item: 'HSeparator',
+            input:1,
+            output:1,
         },
     
     ],
@@ -889,9 +903,12 @@ export default {
         const nodeida = i.node+i.input;
         const nodeidz = key;
 
+        const nodeclassa = editor.value.getNodeFromId(i.node).class;
+        const nodeclassz = editor.value.getNodeFromId(key).class;
+
         const dest = df[key];
         const destName = dest.data.itemname || dest.data.name;
-        const name = `${srcName}to${destName}`;
+        const name = `${srcName}_To_${destName}`;
         const lineProperties = getLineListProperties(name) || {};
 
         // maybe a combo of start and end nodes as a key
@@ -903,6 +920,7 @@ export default {
           index: inputs.length + 1,
 
           atozid: nodeida.toString() + "." + nodeidz.toString(),
+          showinList: ((nodeclassa === "HSeparator" || nodeclassz === "HCombiner") ? false : true),
 
           data: lineProperties,
           //linesysid: systype.value.sysID
@@ -933,6 +951,12 @@ export default {
   // get linecomponent nodes - store names
   function getLineComponentNodeNames() {
     const exportdata = editor.value.export();
+  }
+
+  // determine if you show in list
+
+  function getshowinList() {
+
   }
 
   // initialize code in app
@@ -1022,10 +1046,14 @@ export default {
        editor.value.registerNode('HPump', hydrPumpNode, {}, {});
        editor.value.registerNode('PTU', hydrPTUNode, {}, {});
        editor.value.registerNode('HJunction', hydrJunctionNode, {}, {});
+       editor.value.registerNode('HCombiner', hydrCombinerNode, {}, {});
+       editor.value.registerNode('HSeparator', hydrSeparatorNode, {}, {});
        editor.value.registerNode('Actuator', hydrActuatorNode, {}, {});
        editor.value.registerNode('Accumulator', hydrAccumulatorNode, {}, {});
        editor.value.registerNode('HTrigger', hydrTriggerNode, {}, {});
        editor.value.registerNode('HValve', hydrValveNode, {}, {});
+
+
       // Pneumatics
        editor.value.registerNode('PAPU', pneuAPUNode, {}, {});
        editor.value.registerNode('PEngine', pneuEngineNode, {}, {});
@@ -1065,9 +1093,7 @@ export default {
         // console.error(savedData)
       }
 
-
       // Restore the lineComponentNodeNames
-
 
       editor.value.on('nodeCreated', function(id) {
         const dataNode = editor.value.getNodeFromId(id);
@@ -1099,6 +1125,7 @@ export default {
         setSavedState();
       })      
       editor.value.on('connectionCreated', function(id) {
+        // see if line needs to be set to showinList = false
         setSavedState();
       })
       editor.value.on('connectionRemoved', function(id) {
@@ -1112,9 +1139,6 @@ export default {
         const inputNode = editor.value.getNodeFromId(conn.input_id);
         const lineName = `${outputNode.data.itemname}to${inputNode.data.itemname}`;
         showLine(lineName);
-      })
-      editor.value.on('moduleChanged', function(id) {
-        let test = ' changed';
       })
       // for debugging
       window.editor = editor.value;

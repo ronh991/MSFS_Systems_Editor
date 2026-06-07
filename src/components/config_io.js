@@ -21,99 +21,105 @@ export default class Config {
     let output = '';
     lines.forEach(line => {
 		// need without source destination ??
-      let lineStr = `Line.${line.index} = Name:${line.name} `;      
-		switch (sysID) {
-			case 0:
-      			lineStr += ` #Source:${line.source} #Destination:${line.destination} `;      
-				lineStr += this.writeNodeConfig({
-					'FuelFlowAt1PSI': line.data.fuelflow || '',
-					'Volume': line.data.volume || '',
-					'GravityBasedFuelFlow': line.data.gravityflow || '',
-      			});
-				break;
-			case 1:
-				if (line.data.lineconnection !== undefined && line.data.lineconnection !== '') {
+		if (line.showinList) {
+			let lineStr = `Line.${line.index} = Name:${line.name} `;      
+			switch (sysID) {
+				case 0:
+					lineStr += ` #Source:${line.source} #Destination:${line.destination} `;      
 					lineStr += this.writeNodeConfig({
-						'Connection': line.data.lineconnection + '(' + line.source +',' + line.destination + ')' || '',
+						'FuelFlowAt1PSI': line.data.fuelflow || '',
+						'Volume': line.data.volume || '',
+						'GravityBasedFuelFlow': line.data.gravityflow || '',
 					});
-				}
-				if (line.data.connectioncomponentlist !== undefined && line.data.connectioncomponentlist !== '') {
-					let linecomponentList = line.data.connectioncomponentlist.map(obj => obj.name)
-					lineStr += this.writeNodeConfig({
-						'Connection': line.source +',' + line.destination || '',
-						'Components': linecomponentList || '',
-					});
-				} else {
-					lineStr += this.writeNodeConfig({
-						'Connection': line.source +',' + line.destination || '',
-					});
-				}
-
-				break;
-			case 2:
-				if (line.data.lineinputs !== undefined && line.data.lineinputs !== '') {
-					lineStr += this.writeNodeConfig({
-						'Inputs': line.data.lineinputs || '',
-					});
-					// // fix not needing 'Inputs'
-					// if (PTU) {
-					// 	lineStr += this.writeNodeConfig({
-					// 		'Inputs': PTUName + '.PumpOutput' || '',
-					// 	});
-					// }
-					lineStr += this.writeNodeConfig({
-						'Outputs': line.data.lineoutputs || '',
-					});
-					// // fix not needing 'Outputs' build the total line of values
-					// if (PTU) {
-					// 	lineStr += this.writeNodeConfig({
-					// 		'Outputs': PTUName + '.PumpInput' || '',
-					// 		'Outputs': PTUName + '.MotorInput' || '',
-					// 	});
-					// }
-					if (line.data.hydraccumulatorcomponentlist !== undefined && line.data.hydraccumulatorcomponentlist !== '') {
-						let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponentlist.map(obj => obj.name)
+					break;
+				case 1:
+					if (line.data.lineconnection !== undefined && line.data.lineconnection !== '') {
 						lineStr += this.writeNodeConfig({
-							'Accumulator': lineaccumulatorcomponentList || '',
+							'Connection': line.data.lineconnection + '(' + line.source +',' + line.destination + ')' || '',
 						});
 					}
-					// if (Valves) {
-					// 	lineStr += this.writeNodeConfig({
-					// 		'Valves': ValveName || '',
-					// 	});
-					// }
-					lineStr += this.writeNodeConfig({
-						'NonReturn': line.data.hydrlinenonreturn || '',
-						'WearAndTearCollision': line.data.hydrlinewearandtear || '',
-					});
-				}
-				break;
-			case 3:
-      			lineStr += ` #Source:${line.source} #Destination:${line.destination} `;      
-				lineStr += this.writeNodeConfig({
-					'MaxFlow': line.data.pneumaxflow || '',
-					'Volume': line.data.pneuvolume || '',
-      			});
-				if (line.data.pneufan !== undefined) {
-					//let linefanname = line.data.pneufan.name;
-					lineStr += this.writeNodeConfig({
-						'Fan': line.data.pneufan.name || '',
-					});
-				}
-				if (line.data.pneuvalvecomponentlist !== undefined && line.data.pneuvalvecomponentlist !== '') {
-					let linevalvecomponentList = line.data.pneuvalvecomponentlist.map(obj => obj.name)
-					lineStr += this.writeNodeConfig({
-						'Valves': linevalvecomponentList || '',
-					});
-				}
+					if (line.data.connectioncomponentlist !== undefined && line.data.connectioncomponentlist !== '') {
+						let linecomponentList = line.data.connectioncomponentlist.map(obj => obj.name)
+						lineStr += this.writeNodeConfig({
+							'Connection': line.source +',' + line.destination || '',
+							'Components': linecomponentList || '',
+						});
+					} else {
+						lineStr += this.writeNodeConfig({
+							'Connection': line.source +',' + line.destination || '',
+						});
+					}
 
-				break;
-			case 4:
-				// no lines in liquid
-				break;
-	}
-      output += lineStr + '\n';
-    });
+					break;
+				case 2:
+					if (line.showinList) {
+						if (line.data.lineinputs !== undefined && line.data.lineinputs !== '') {
+							lineStr += this.writeNodeConfig({
+								'Inputs': line.data.lineinputs || '',
+							});
+							// // fix not needing 'Inputs'
+							// if (PTU) {
+							// 	lineStr += this.writeNodeConfig({
+							// 		'Inputs': PTUName + '.PumpOutput' || '',
+							// 	});
+							// }
+						}
+						if (line.data.lineoutputs !== undefined && line.data.lineoutputs !== '') {
+							lineStr += this.writeNodeConfig({
+								'Outputs': line.data.lineoutputs || '',
+							});
+							// // fix not needing 'Outputs' build the total line of values
+							// if (PTU) {
+							// 	lineStr += this.writeNodeConfig({
+							// 		'Outputs': PTUName + '.PumpInput' || '',
+							// 		'Outputs': PTUName + '.MotorInput' || '',
+							// 	});
+							// }
+						}
+						if (line.data.hydraccumulatorcomponentlist !== undefined && line.data.hydraccumulatorcomponentlist !== '') {
+							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponentlist.map(obj => obj.name)
+							lineStr += this.writeNodeConfig({
+								'Accumulator': lineaccumulatorcomponentList || '',
+							});
+						}
+						// if (Valves) {
+						// 	lineStr += this.writeNodeConfig({
+						// 		'Valves': ValveName || '',
+						// 	});
+						// }
+						lineStr += this.writeNodeConfig({
+							'NonReturn': line.data.hydrlinenonreturn || '',
+							'WearAndTearCollision': line.data.hydrlinewearandtear || '',
+						});
+					}
+					break;
+				case 3:
+					lineStr += ` #Source:${line.source} #Destination:${line.destination} `;      
+					lineStr += this.writeNodeConfig({
+						'MaxFlow': line.data.pneumaxflow || '',
+						'Volume': line.data.pneuvolume || '',
+					});
+					if (line.data.pneufan !== undefined) {
+						//let linefanname = line.data.pneufan.name;
+						lineStr += this.writeNodeConfig({
+							'Fan': line.data.pneufan.name || '',
+						});
+					}
+					if (line.data.pneuvalvecomponentlist !== undefined && line.data.pneuvalvecomponentlist !== '') {
+						let linevalvecomponentList = line.data.pneuvalvecomponentlist.map(obj => obj.name)
+						lineStr += this.writeNodeConfig({
+							'Valves': linevalvecomponentList || '',
+						});
+					}
+
+					break;
+				case 4:
+					// no lines in liquid
+					break;
+			}
+			output += lineStr + '\n';
+		}
+	});
     return output;
   }
 
@@ -170,6 +176,8 @@ export default class Config {
 			Actuator: 'Actuator',
 			HTrigger: 'Trigger',
 			Accumulator: 'Accumulator',
+			HCombiner: 'Combiner',
+			HSeparator: 'Separator'
 		},
 		{
 			PAPU: 'APU',
@@ -832,6 +840,18 @@ export default class Config {
 		'Diode',
 		'Relay',
 		'Connection',
+		],
+		[
+		'Reservior',
+		'HPump',
+		'Accumulator',
+		'Actuator',
+		'PTU',
+		'HJunction',
+		'HTrigger',
+		'HValve',
+		'HCombiner',
+		'HSeparator',
 		]
 	];
     const sortedNodeList = nodeList.sort((a, b) => sortOrder[sysID].indexOf(a.name) - sortOrder[sysID].indexOf(b.name));

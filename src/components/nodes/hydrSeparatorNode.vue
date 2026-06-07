@@ -1,6 +1,6 @@
 <template>
     <div ref="el">
-        <nodeHeader :title="itemname" nodeType="Junction" :index="itemindex" sysID="1"/>
+        <nodeHeader :title="itemname" nodeType="Separater" :index="itemindex" sysID="1"/>
       <el-form
         label-width="auto"
       >
@@ -8,9 +8,6 @@
         <div ref="properties">
             <el-form-item label="Name" label-position="left">
                 <el-input v-model="itemname" df-itemname  size="small"></el-input>
-            </el-form-item>
-            <el-form-item label="Wear & Tear" label-position="left">
-                <el-input v-model="wearandtear" df-wearandtear size="small" type="textarea" :rows="3"></el-input>
             </el-form-item>
         </div>
     </el-form>
@@ -36,7 +33,6 @@ export default defineComponent({
         const connections = ref([]);
 
         // Data items
-        const wearandtear = ref('');
 
         const helper = new Helper;
 
@@ -93,9 +89,9 @@ export default defineComponent({
                 const selfNode = df.getNodeFromId(nodeId.value);
                 const selfCon = getConnections();
                 connections.value = selfCon.connections;
-                if (selfCon.inputCount === selfCon.inputsUsed || selfCon.inputCount === 0) {
-                    df.addNodeInput(nodeId.value);
-                }
+                // if (selfCon.inputCount === selfCon.inputsUsed || selfCon.inputCount === 0) {
+                //     df.addNodeInput(nodeId.value);
+                // }
                 if (selfCon.outputCount === selfCon.outputsUsed || selfCon.outputCount === 0) {
                     df.addNodeOutput(nodeId.value);
                 }
@@ -108,9 +104,9 @@ export default defineComponent({
                 connections.value = selfCon.connections;
                 if (output_id === nodeId.value && selfCon.outputCount > 1) {
                     df.removeNodeOutput(output_id, output_class);
-                } else if(selfCon.inputCount > 1) {
-                    df.removeNodeInput(input_id, input_class);
-                }
+                } //else if(selfCon.inputCount > 1) {
+                    //df.removeNodeInput(input_id, input_class);
+                //}
             }
         })
 
@@ -118,7 +114,6 @@ export default defineComponent({
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 const data = {
                     itemname: itemname.value || dataNode.value.data.name,
-                    wearandtear: wearandtear.value || '',
                     ...dataNode.value.data };
                 df.updateNodeDataFromId(nodeId.value, data);
             }
@@ -138,14 +133,13 @@ export default defineComponent({
             itemname.value = dataNode.value.data.itemname;
 
             // Data
-            wearandtear.value = dataNode.value.data.wearandtear;
 
             setAllParameters();
             
        });
         
         return {
-            el, itemname, itemindex, connections, wearandtear, 
+            el, itemname, itemindex, connections,  
               
         }
 

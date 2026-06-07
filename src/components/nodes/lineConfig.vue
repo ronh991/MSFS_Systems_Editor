@@ -200,6 +200,7 @@ export default {
         const lineoutputs = ref([]);
         const hydraccumulatorComponentList = ref();
         const hydraccumulatorcomponentlist = ref();
+        const hydrPTUComponentList = ref();
         const hydrvalveComponentList = ref();
         const hydrvalvecomponentlist = ref();
         const hydrlinenonreturn = ref(false);
@@ -217,6 +218,20 @@ export default {
         const linesysID = ref(0);
 
         const helper = new Helper;
+
+        const PTUinputnames = readonly([
+            'MotorInput',
+            'PumpInput',
+        ]);
+
+        const PTUoutputnames = readonly([
+            'MotorOutput',
+            'MotorRelief',
+            'PumpOutput',
+            'PumpRelief',
+        ]);
+
+        
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
 
@@ -258,6 +273,191 @@ export default {
             if (lineaccumulatorcomponents) {
                 hydraccumulatorComponentList.value = lineaccumulatorcomponents.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
+        }
+
+        const gethydrlineList = () => {
+            // if (!df.data) return { connections: [] };
+            const exportdata = df.export();
+
+            // line has end points. add in combine node and separate node
+            // combine has a name and one/many in one out
+            // separate has name and one in and one/many out
+
+            // linedata needs a showinList bool
+
+            // if connected to a combine/separate then showinList=false
+
+            // line data name is name of combiner + to + name of separate
+
+
+
+            if(dataModel.value.itemname !== undefined)  {
+                const linenodenames = dataModel.value.itemname.split("_To_");
+
+                // for all other hydralic lines
+                lineinputs.value = [];
+                lineoutputs.value = [];
+                const linecomponents =  Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class !== '');
+                if (linecomponents.length > 0) {
+                    hydrPTUComponentList.value = linecomponents.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id, class: c.class}));
+                    const result = Object.entries(hydrPTUComponentList.value).filter(([key, value]) => (value.name == linenodenames[0] || value.name == linenodenames[1]))
+                    if (result !== undefined) {
+                        if (result.length > 0) {
+                            //need to loop all results
+                            result.forEach((r) => {
+                                if (r[1].class !== 'PTU' && r[1].class !== 'HCombiner' && r[1].class !== 'HSeparator') {
+                                    const selfCon0 = getConnections(r[1].nodeid);
+                                    if (selfCon0.connections.length > 0) {
+                                        selfCon0.connections.forEach((c) => {
+                                            if (dataModel.value.itemname === c.name) {
+                                                if(c.inputname !== '') {
+                                                    lineoutputs.value = [c.inputname, ...lineoutputs.value];
+                                                }
+                                                if(c.outputname !== '') {
+                                                    lineinputs.value = [c.outputname, ...lineinputs.value];
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                                // PTU
+                                if (r[1].class === 'PTU') {
+                                    const selfCon0 = getConnections(r[1].nodeid);
+                                    if (selfCon0.connections.length > 0) {
+                                        selfCon0.connections.forEach((c) => {
+                                            if (dataModel.value.itemname === c.name) {
+                                                if(c.inputname !== '') {
+                                                    lineoutputs.value = [c.inputname, ...lineoutputs.value];
+                                                }
+                                                if(c.outputname !== '') {
+                                                    lineinputs.value = [c.outputname, ...lineinputs.value];
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                                // Combiner and Separator
+                                if (r[1].class === 'HCombiner' || r[1].class === 'HSeparator') {
+                                    const selfCon0 = getConnections(r[1].nodeid);
+                                    if (selfCon0.connections.length > 0) {
+
+                                        // do the Combiner input values
+                                        let templineinputs = [];
+                                        let templineoutputs = [];
+                                        // for a combiner then the inputs are from the nodes attached to the combiner input
+                                        // check if combiner
+                                        if (r[1].class === 'HCombiner') {
+                                            // don't want the combiner separator link
+                                            Object.entries(selfCon0.connections).forEach(([ioKey, ioValue]) => {if (ioValue.inputname !== '' && df.getNodeFromId(ioValue.node).class !== 'HSeparator') 
+                                                { templineinputs.push({name: ioValue.name, node: ioValue.node, input: ioValue.input, class: df.getNodeFromId(ioValue.node).class})
+                                            }});
+                                            templineinputs.forEach((t) => {
+                                                const selfCon1 = getConnections(t.node);
+                                                if (selfCon1.connections.length > 0) {
+                                                    selfCon1.connections.forEach((c) => {
+                                                        if (t.name === c.name) {
+                                                            if(c.inputname !== '') {
+                                                                lineoutputs.value = [c.inputname, ...lineoutputs.value];
+                                                            }
+                                                            if(c.outputname !== '') {
+                                                                lineinputs.value = [c.outputname, ...lineinputs.value];
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                        if (r[1].class === 'HSeparator') {
+                                            // don't want the combiner separator link
+                                            Object.entries(selfCon0.connections).forEach(([ioKey, ioValue]) => {if (ioValue.outputname !== '' && df.getNodeFromId(ioValue.node).class !== 'HCombiner') 
+                                                { templineoutputs.push({name: ioValue.name, node: ioValue.node, input: ioValue.input, class: df.getNodeFromId(ioValue.node).class})
+                                            }});
+                                            templineoutputs.forEach((t) => {
+                                                const selfCon1 = getConnections(t.node);
+                                                if (selfCon1.connections.length > 0) {
+                                                    selfCon1.connections.forEach((c) => {
+                                                        if (t.name === c.name) {
+                                                            if(c.inputname !== '') {
+                                                                lineoutputs.value = [c.inputname, ...lineoutputs.value];
+                                                            }
+                                                            if(c.outputname !== '') {
+                                                                lineinputs.value = [c.outputname, ...lineinputs.value];
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+                update();
+            }
+        }
+
+        const getConnections = (id) => {
+            // if (!df.data) return { connections: [] };
+            const selfNode = df.getNodeFromId(id);
+            const isPTU = selfNode.class === 'PTU';
+            const selfName = selfNode.data.itemname || selfNode.data.name;
+            const io = {...selfNode.inputs, ...selfNode.outputs};
+            const connections = [];
+            let inputCount = 0;
+            let inputsUsed = 0;
+            let outputCount = 0;
+            let outputsUsed = 0;            
+            Object.entries(io).forEach(([ioKey, ioValue]) => {
+                if (ioValue.connections && Array.isArray(ioValue.connections)) {
+                    // for PTU
+                    if (isPTU) {
+                        ioValue.connections.forEach(connection => {
+                            if (connection.node) {
+                                const isInput = ioKey.indexOf('input') != -1;
+                                const isInput1 = ioKey.indexOf('input_1') != -1;
+                                const isInput2 = ioKey.indexOf('input_2') != -1;
+                                const isOutput1 = ioKey.indexOf('output_1') != -1;
+                                const isOutput2 = ioKey.indexOf('output_2') != -1;
+                                const isOutput3 = ioKey.indexOf('output_3') != -1;
+                                const isOutput4 = ioKey.indexOf('output_4') != -1;
+                                const ioNode = df.getNodeFromId(connection.node);
+                                const nodeName = ioNode.data.itemname || ioNode.data.name;
+                                connections.push({
+                                    name: isInput ? `${nodeName}_To_${selfName}` : `${selfName}_To_${nodeName}`,
+                                    inputname: isInput1 ? `${selfName}.MotorInput` : isInput2 ? `${selfName}.PumpInput` : '',
+                                    outputname: isOutput1 ? `${selfName}.MotorOutput` : isOutput2 ? `${selfName}.MotorRelief` : isOutput3 ? `${selfName}.PumpOutput` : isOutput4 ? `${selfName}.PumpRelief` : '',
+                                    ...connection,
+                                });
+                            } 
+                        });
+                    }
+
+                    // For nonPTU
+                    else {
+                        ioValue.connections.forEach(connection => {
+                            if (connection.node) {
+                                const isInput = ioKey.indexOf('input') != -1;
+                                const ioNode = df.getNodeFromId(connection.node);
+                                const nodeName = ioNode.data.itemname || ioNode.data.name;
+                                // if an input then this is end point of connection set outputname
+                                connections.push({
+                                    name: isInput ? `${nodeName}_To_${selfName}` : `${selfName}_To_${nodeName}`,
+                                    inputname: isInput ? `${selfName}` : '',
+                                    outputname: !isInput ? `${selfName}` : '',
+                                    ...connection,
+                                });
+                            } 
+                        });
+                    }
+                }
+            });
+            const obj = {
+                connections,
+            }
+            // console.error(obj);
+            return obj;
         }
 
         //Pneumatics
@@ -318,6 +518,7 @@ export default {
                 hydrlinewearandtear.value = dataModel.value.hydrlinewearandtear || '';
                 gethydrlineValveList();
                 gethydrlineAccumulatorList();
+                gethydrlineList();
             }
             if (props.sysID === 3) {
                 pneumaxflow.value = dataModel.value.pneumaxflow || '';
@@ -367,6 +568,7 @@ export default {
             await nextTick()
 
             hydrvalvecomponentlist.value = dataModel.value.hydrvalvecomponentlist;
+            pneuvalvecomponentlist.value = dataModel.value.pneuvalvecomponentlist;
 
             helper.checklinemultiselected(dataModel.value.hydrvalvecomponentlist, hydrvalveComponentList, hydrvalvecomponentlist, df, { hydrvalvecomponentlist: hydrvalvecomponentlist.value, ...dataModel.value }, dataModel);
             helper.checklinemultiselected(dataModel.value.pneuvalvecomponentlist, pneuvalveComponentList, pneuvalvecomponentlist, df, { pneuvalvecomponentlist: pneuvalvecomponentlist.value, ...dataModel.value }, dataModel);
@@ -375,11 +577,11 @@ export default {
         return {
             el, itemname, linesysID, fuelFlow, volume, gravityFlow, 
             lineconnection, connectioncomponentlist, lineConnectionList, lineComponentList, lineinputs, lineoutputs,
-            hydraccumulatorcomponentlist, hydrvalvecomponentlist, hydraccumulatorComponentList, hydrvalveComponentList, hydrlinenonreturn, hydrlinewearandtear, 
+            hydraccumulatorcomponentlist, hydrvalvecomponentlist, hydraccumulatorComponentList, hydrPTUComponentList, hydrvalveComponentList, hydrlinenonreturn, hydrlinewearandtear, 
             pneumaxflow, pneuvalvecomponentlist, pneufan, pneuvolume, pneufanComponentList, pneuvalveComponentList,
             dataModel,
             update, closeDialog, 
-            getlineComponentList, getpneulineValveList, gethydrlineValveList, gethydrlineAccumulatorList,
+            getlineComponentList, getpneulineValveList, gethydrlineValveList, gethydrlineAccumulatorList, gethydrlineList
         }
     }    
 }
