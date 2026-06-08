@@ -147,37 +147,39 @@ export default defineComponent({
        
         const selectSupplierType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setSupplierCfgOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
 
         }
 
-        const getSuppliers = () => {
+        const getSuppliers = (id) => {
             const exportdata = df.export();
             const suppliers = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'SupplierCfg');
             if (suppliers) {
                 supplierList.value = suppliers.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
         const selectBatteryType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkmultiselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data }, dataNode);
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     supplierCfg: supplierCfg.value || '',
                     vrms: vrms.value || '',
@@ -194,8 +196,9 @@ export default defineComponent({
                     batterytype: batterytype.value || '',
                     voltage: voltage.value || '',
                     sType: sType.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -206,9 +209,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', getSuppliers);
-            df.on('nodeCreated', getSuppliers);
-            df.on('nodeRemoved', getSuppliers);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getSuppliers(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getSuppliers(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getSuppliers(nodeId.value);
+                });
+            })
             
             itemname.value = dataNode.value.data.itemname;
             itemindex.value = dataNode.value.data.index;
@@ -230,7 +242,7 @@ export default defineComponent({
 //            wearandtear.value = dataNode.value.data.wearandtear;
 
             sType.value = dataNode.value.data.sType;
-            getSuppliers();
+            getSuppliers(nodeId.value);
         });
         
         return {

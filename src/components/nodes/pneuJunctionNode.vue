@@ -40,8 +40,6 @@ export default defineComponent({
         const lineList = ref([]);
  
         // Data items
-        //const inputlines = ref('');
-        //const outputlines =ref('');
         const volume = ref();
 
         const helper = new Helper;
@@ -120,14 +118,17 @@ export default defineComponent({
             }
         })
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     volume: volume.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -137,15 +138,16 @@ export default defineComponent({
             dataNode.value = df.getNodeFromId(nodeId.value)
             connections.value = getConnections().connections;
 
-            df.on('nodeDataChanged', setAllParameters);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
             
-            //inputlines.value = dataNode.value.data.inputlines;
-            //outputlines.value = dataNode.value.data.outputlines;
             volume.value = dataNode.value.data.volume;
-            setAllParameters();
+            setAllParameters(nodeId.value);
         });
         
         return {

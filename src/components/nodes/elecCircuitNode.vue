@@ -51,7 +51,7 @@
 
             <div v-if="consumerCfg === undefined ">=Consumer Data=
                 <el-form-item label="CType" label-position="left" size="small">
-                    <el-select v-model="cType" @change="setConsumerTypeOption" df-cType placeholder="Select" size="small" clearable>
+                    <el-select v-model="cType" @change="setConsumerTypeOption" df-cType placeholder="Select" size="small" clearable filterable>
                     <el-option
                         v-for="item in consumerTypeOptions"
                         :key="item"
@@ -211,36 +211,38 @@ export default defineComponent({
 
         const setCircuitTypeOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setConsumerTypeOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setConsumerCfgOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const getConsumers = () => {
+        const getConsumers = (id) => {
             const exportdata = df.export();
             const consumers = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'ConsumerCfg');
             if (consumers) {
                 consumerList.value = consumers.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkmultiselected(dataNode.value.data.consumerCfg, consumerList, consumerCfg, df, nodeId, { consumerCfg: consumerCfg.value, ...dataNode.value.data }, dataNode);
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     consumerCfg: consumerCfg.value || '',
                     circuittype: circuittype.value || '',
@@ -254,8 +256,9 @@ export default defineComponent({
                     capacity: capacity.value || '',
                     chargecrate: chargecrate.value || '',
                     wearandtear: wearandtear.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -266,9 +269,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeCreated', getConsumers);
-            df.on('nodeRemoved', getConsumers);
-            df.on('nodeDataChanged', getConsumers);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getConsumers(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getConsumers(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getConsumers(nodeId.value);
+                });
+            })
 
             itemname.value = dataNode.value.data.itemname;
             itemindex.value = dataNode.value.data.index;
@@ -286,7 +298,7 @@ export default defineComponent({
             capacity.value = dataNode.value.data.capacity;
             chargecrate.value = dataNode.value.data.chargecrate;
 
-            getConsumers();
+            getConsumers(nodeId.value);
         });
         
         return {

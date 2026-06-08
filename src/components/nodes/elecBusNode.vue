@@ -106,13 +106,16 @@ export default defineComponent({
             }
         })
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+            }
             }
         }
 
@@ -123,12 +126,13 @@ export default defineComponent({
 
             df.on('nodeDataChanged', (id) => {
                 connections.value = getConnections().connections;
+                setAllParameters(id);
             });
 
             itemname.value = dataNode.value.data.name;  
             itemindex.value = dataNode.value.data.index;
             
-            setAllParameters();
+            setAllParameters(nodeId.value);
         });
         
         return {

@@ -64,30 +64,33 @@ export default defineComponent({
 
         const setCurveRateOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkselected(dataNode.value.data.curverate, curveList, curverate, df, nodeId, {curverate: curverate.value, ...dataNode.value.data});
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     fixedrate: fixedrate.value || '',
                     contactpoint: contactpoint.value || '',
                     curverate: curverate.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
-        const getCurves = () => {
+        const getCurves = (id) => {
             const exportdata = df.export();
             const curves = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Curve');
             if (curves) {
                 curveList.value = curves.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
@@ -97,9 +100,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', getCurves);
-            df.on('nodeCreated', getCurves);
-            df.on('nodeRemoved', getCurves);           
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
              
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
@@ -108,7 +120,7 @@ export default defineComponent({
             curverate.value = dataNode.value.data.curverate;
             contactpoint.value = dataNode.value.data.contactpoint;
 
-            getCurves();
+            getCurves(nodeId.value);
         });
         
         return {

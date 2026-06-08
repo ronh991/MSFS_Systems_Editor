@@ -19,10 +19,15 @@ export default class Config {
   // called from nodeEdit
   convertLines(lines, sysID) {
     let output = '';
+	let hydrLineCounter = 1;
     lines.forEach(line => {
 		// need without source destination ??
 		if (line.showinList) {
-			let lineStr = `Line.${line.index} = Name:${line.name} `;      
+			let lineStr = `Line.${line.index} = Name:${line.name} `;   
+			if (sysID === 2) {
+				lineStr = `Line.${hydrLineCounter} = Name:${line.name} `;
+				hydrLineCounter++;
+			}   
 			switch (sysID) {
 				case 0:
 					lineStr += ` #Source:${line.source} #Destination:${line.destination} `;      
@@ -80,6 +85,12 @@ export default class Config {
 							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponentlist.map(obj => obj.name)
 							lineStr += this.writeNodeConfig({
 								'Accumulator': lineaccumulatorcomponentList || '',
+							});
+						}
+						if (line.data.hydrvalvecomponentlist !== undefined && line.data.hydrvalvecomponentlist !== '') {
+							let hydrvalvecomponentList = line.data.hydrvalvecomponentlist.map(obj => obj.name)
+							lineStr += this.writeNodeConfig({
+								'Valves': hydrvalvecomponentList || '',
 							});
 						}
 						// if (Valves) {
@@ -199,6 +210,7 @@ export default class Config {
 			Scoop: 'Scoop',
 		},
 	]
+
 	let output = '['+systemType[sysID].label.toUpperCase()+']'+'\n'+systemType[sysID].version+'\n';
 	let valvecounter = 1; // some systems have 2 different vale types
     nodes.sort((a, b) => a.class.localeCompare(b.class)).forEach(node => {
@@ -210,7 +222,7 @@ export default class Config {
 		nodestrkey = `${classname2paramnames[sysID][node.class]}.` + valvecounter.toString();
 		valvecounter++;
 	  } else{
-				nodestrkey = `${classname2paramnames[sysID][node.class]}.${node.data.index}`;
+		nodestrkey = `${classname2paramnames[sysID][node.class]}.${node.data.index}`;
 	  }
       let nodeStr = nodestrkey + ` = Name:${node.data.itemname || node.data.name} `;
       if(node.data.itemtitle) {
@@ -468,7 +480,7 @@ export default class Config {
 			break;
 		case 'HPump':
 				nodeStr += this.writeNodeConfig({
-					'PumpType': node.data.pumptype || '',
+					'Type': node.data.pumptype || '',
 					'NormalPressure': node.data.normalpressure || '',
 					'NominalDisplacement': node.data.nominaldisplacement || '',
 					'LiquidCapacity': node.data.liquidcapacity || '',
@@ -555,7 +567,7 @@ export default class Config {
 		  break;
         case 'Actuator':
           nodeStr += this.writeNodeConfig({
-            'FluidVoluem': node.data.fluidvolume || '',
+            'FluidVolume': node.data.fluidvolume || '',
             'LiquidCapacity': node.data.liquidcapacity || '',
             'LiquidConsumption': node.data.liquidconsumption || '',
             'MinimalPressure': node.data.minimalpressure || '',
@@ -566,6 +578,12 @@ export default class Config {
 			'WearAndTearCollision': node.data.wearandtear || '',
           });
 		  break;
+		case 'HCombiner':
+			nodeStr = '';
+			break;
+		case 'HSeparator':
+			nodeStr = '';
+			break;
         case 'LTank':
           nodeStr += this.writeNodeConfig({
             'Position': node.data.position || '',

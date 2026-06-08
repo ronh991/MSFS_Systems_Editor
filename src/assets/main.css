@@ -87,7 +87,7 @@ html {
   cursor: pointer;
 }
 .line-items .edit-line.active svg {
-  color: #00ed5f;
+  color: #92ed00;
 }
 .line-items .edit-line:hover, .type-items .pan-to:hover {
   flex: 0 0 1em;

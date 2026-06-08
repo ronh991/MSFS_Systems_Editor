@@ -20,6 +20,7 @@
                   size="small"
                   clearable
                   multiple
+                  filterable
                   df-managedareas
                   @change="setManAreasOption"
                   value-key="nodeid"
@@ -90,39 +91,42 @@ export default defineComponent({
 
         const setManAreasOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
         
         const selectValveType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkmultiselected(dataNode.value.data.managedareas, managedareasList, managedareas, df, nodeId, { managedareas: managedareas.value, ...dataNode.value.data }, dataNode);
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     circuit: circuit.value || '',
                     openingtime: openingtime.value || '',
                     valvetype: valvetype.value || '',
                     valvepid: valvepid.value || '',
                     managedareas: managedareas.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
-        const getManagedAreas = () => {
+        const getManagedAreas = (id) => {
             const exportdata = df.export();
             const areas = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Area');
             if (areas) {
                 managedareasList.value = areas.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
          }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
@@ -132,10 +136,19 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeCreated', getManagedAreas);
-            df.on('nodeRemoved', getManagedAreas);
-            df.on('nodeDataChanged', getManagedAreas);
-            
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getManagedAreas(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getManagedAreas(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getManagedAreas(nodeId.value);
+                });
+            })
+
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
             
@@ -145,7 +158,7 @@ export default defineComponent({
             valvetype.value = dataNode.value.data.valvetype;
             valvepid.value = dataNode.value.data.valvepid;
 
-            getManagedAreas();
+            getManagedAreas(nodeId.value);
        });
         
         return {

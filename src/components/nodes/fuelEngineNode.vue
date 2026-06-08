@@ -38,16 +38,19 @@ export default defineComponent({
         const itemindex = ref('');
         const engineIndex = ref('1');
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data,
                     itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
                     engineindex: engineIndex.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
             }
+        }
         }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
@@ -57,7 +60,10 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', setAllParameters);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
             
             itemname.value = dataNode.value.data.itemname;
             itemTitle.value = dataNode.value.data.itemtitle;
@@ -65,7 +71,7 @@ export default defineComponent({
 
             engineIndex.value = dataNode.value.data.engineindex || itemindex.value || '1';
 
-            setAllParameters();
+            setAllParameters(nodeId.value);
         });
         
         return {

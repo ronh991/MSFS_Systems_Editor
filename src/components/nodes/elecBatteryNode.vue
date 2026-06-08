@@ -213,13 +213,13 @@ export default defineComponent({
         // 'df-xxxxx' ids need to be lowercase
         const selectConsumerType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setConsumerCfgOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
@@ -242,13 +242,13 @@ export default defineComponent({
         
         const selectSupplierType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setSupplierCfgOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
@@ -267,24 +267,26 @@ export default defineComponent({
             'LithiumIon',
         ]);
 
-        const getSuppliersandConsumers = () => {
+        const getSuppliersandConsumers = (id) => {
             getConsumers();
             getSuppliers();
-            setAllParameters();
+            setAllParameters(nodeId.value);
         }
 
         const selectBatteryType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkmultiselected(dataNode.value.data.consumerCfg, consumerList, consumerCfg, df, nodeId, { consumerCfg: consumerCfg.value, ...dataNode.value.data }, dataNode);
                 helper.checkmultiselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data }, dataNode);
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     supplierCfg: supplierCfg.value || '',
                     consumerCfg: consumerCfg.value || '',
@@ -311,8 +313,9 @@ export default defineComponent({
                     batterytype: batterytype.value || '',
                     sType: sType.value || '',
                     wearandtear: wearandtear.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -323,9 +326,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', getSuppliersandConsumers)
-            df.on('nodeCreated', getSuppliersandConsumers);
-            df.on('nodeRemoved', getSuppliersandConsumers);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getSuppliersandConsumers(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getSuppliersandConsumers(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getSuppliersandConsumers(nodeId.value);
+                });
+            })
             
             itemname.value = dataNode.value.data.itemname;
             itemindex.value = dataNode.value.data.index;
@@ -360,7 +372,7 @@ export default defineComponent({
             sType.value = dataNode.value.data.sType;
             cType.value = dataNode.value.data.cType;
 
-            getSuppliersandConsumers();
+            getSuppliersandConsumers(nodeId.value);
         });
         
         return {

@@ -44,17 +44,20 @@ export default defineComponent({
         const maxflowrate = ref();
         const power = ref();
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data,
                     itemname: itemname.value || '',
                     burner: burner.value || '',
                     maxflowrate: maxflowrate.value || '',
                     power: power.value || '',
-                   ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
             }
+        }
         }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
@@ -64,7 +67,10 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', setAllParameters);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
@@ -73,7 +79,7 @@ export default defineComponent({
             maxflowrate.value = dataNode.value.data.maxflowrate;
             power.value = dataNode.value.data.power;
 
-            setAllParameters();
+            setAllParameters(nodeId.value);
        });
         
         return {

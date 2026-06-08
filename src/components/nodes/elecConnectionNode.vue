@@ -58,27 +58,30 @@ export default defineComponent({
 
         const setlineComponentOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const getlineComponentList = () => {
+        const getlineComponentList = (id) => {
             const exportdata = df.export();
             const linecomponents = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Breaker' || node.class === 'Transformer' || node.class === 'Diode');
             if (linecomponents) {
                 lineComponentList.value = linecomponents.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     linecomponent: linecomponent.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -87,9 +90,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', getlineComponentList);
-            df.on('nodeCreated', getlineComponentList);
-            df.on('nodeRemoved', getlineComponentList);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getlineComponentList(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getlineComponentList(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getlineComponentList(nodeId.value);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             linecomponent.value = dataNode.value.data.linecomponent;
@@ -101,7 +113,7 @@ export default defineComponent({
             //    lineComponentList.value = linecomponents.map(([k,c]) => ({name: c.data.itemname ? c.data.itemname : c.data.name, index: c.data.index, nodeid: c.id}));
             //}
 
-            getlineComponentList();
+            getlineComponentList(nodeId.value);
         });
         
         return {

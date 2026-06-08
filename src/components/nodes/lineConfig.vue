@@ -111,7 +111,7 @@
                   />
             </el-form-item>
             <el-form-item label="Wear & Tear" label-position="left">
-                <el-input v-model="hydrlinewearandtear" df-linewearandtear size="small" type="textarea" :rows="3" @change="update"></el-input>
+                <el-input v-model="hydrlinewearandtear" df-hydrlinewearandtear size="small" type="textarea" :rows="3" @change="update"></el-input>
             </el-form-item>
         
         </div>    
@@ -204,7 +204,7 @@ export default {
         const hydrvalveComponentList = ref();
         const hydrvalvecomponentlist = ref();
         const hydrlinenonreturn = ref(false);
-        const hydrlinewearandtear = ref('');
+        const hydrlinewearandtear = ref();
         // Pneumatic
         const pneumaxflow = ref();
         const pneuvalveComponentList = ref([]);
@@ -275,7 +275,7 @@ export default {
             }
         }
 
-        const gethydrlineList = () => {
+        const gethydrlineData = () => {
             // if (!df.data) return { connections: [] };
             const exportdata = df.export();
 
@@ -394,7 +394,7 @@ export default {
                         }
                     }
                 }
-                update();
+                //update();
             }
         }
 
@@ -510,15 +510,16 @@ export default {
                 getlineComponentList()
             }
             if (props.sysID === 2) {
-                lineinputs.value = dataModel.value.lineinputs || '';
-                lineoutputs.value = dataModel.value.lineoutputs || '';
+                gethydrlineValveList();
+                gethydrlineAccumulatorList();
+                gethydrlineData();
+                // was already updated in gethydrlinelist
+                //lineinputs.value = dataModel.value.lineinputs || '';
+                //lineoutputs.value = dataModel.value.lineoutputs || '';
                 hydraccumulatorcomponentlist.value = dataModel.value.hydraccumulatorcomponentlist || '';
                 hydrvalvecomponentlist.value = dataModel.value.hydrvalvecomponentlist || '';
                 hydrlinenonreturn.value = dataModel.value.hydrlinenonreturn || false;
                 hydrlinewearandtear.value = dataModel.value.hydrlinewearandtear || '';
-                gethydrlineValveList();
-                gethydrlineAccumulatorList();
-                gethydrlineList();
             }
             if (props.sysID === 3) {
                 pneumaxflow.value = dataModel.value.pneumaxflow || '';
@@ -528,7 +529,7 @@ export default {
                 getpneulineValveList();
                 getpneulineFanList();
             }
-
+            update();
             // no liquid lines
 
         });
@@ -566,22 +567,26 @@ export default {
         }
         onMounted(async () => {
             await nextTick()
+            //df.on('nodeDataChanged', update);           
 
+            // populate data
             hydrvalvecomponentlist.value = dataModel.value.hydrvalvecomponentlist;
             pneuvalvecomponentlist.value = dataModel.value.pneuvalvecomponentlist;
+            lineinputs.value = dataModel.value.lineinputs;
+            lineoutputs.value = dataModel.value.lineoutputs;
 
-            helper.checklinemultiselected(dataModel.value.hydrvalvecomponentlist, hydrvalveComponentList, hydrvalvecomponentlist, df, { hydrvalvecomponentlist: hydrvalvecomponentlist.value, ...dataModel.value }, dataModel);
-            helper.checklinemultiselected(dataModel.value.pneuvalvecomponentlist, pneuvalveComponentList, pneuvalvecomponentlist, df, { pneuvalvecomponentlist: pneuvalvecomponentlist.value, ...dataModel.value }, dataModel);
+            helper.checklinemultiselected(dataModel.value.hydrvalvecomponentlist, hydrvalveComponentList, hydrvalvecomponentlist, df, { ...dataModel.value, hydrvalvecomponentlist:  hydrvalvecomponentlist.value }, dataModel);
+            helper.checklinemultiselected(dataModel.value.pneuvalvecomponentlist, pneuvalveComponentList, pneuvalvecomponentlist, df, { ...dataModel.value, pneuvalvecomponentlist:  pneuvalvecomponentlist.value }, dataModel);
         });
 
         return {
             el, itemname, linesysID, fuelFlow, volume, gravityFlow, 
             lineconnection, connectioncomponentlist, lineConnectionList, lineComponentList, lineinputs, lineoutputs,
-            hydraccumulatorcomponentlist, hydrvalvecomponentlist, hydraccumulatorComponentList, hydrPTUComponentList, hydrvalveComponentList, hydrlinenonreturn, hydrlinewearandtear, 
+            hydraccumulatorcomponentlist, hydrvalvecomponentlist, hydrPTUComponentList, hydraccumulatorComponentList, hydrvalveComponentList, hydrlinenonreturn, hydrlinewearandtear, 
             pneumaxflow, pneuvalvecomponentlist, pneufan, pneuvolume, pneufanComponentList, pneuvalveComponentList,
             dataModel,
             update, closeDialog, 
-            getlineComponentList, getpneulineValveList, gethydrlineValveList, gethydrlineAccumulatorList, gethydrlineList
+            getlineComponentList, getpneulineValveList, gethydrlineValveList, gethydrlineAccumulatorList, gethydrlineData
         }
     }    
 }

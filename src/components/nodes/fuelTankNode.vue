@@ -77,7 +77,7 @@ export default defineComponent({
 
         const setOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
@@ -90,11 +90,13 @@ export default defineComponent({
             setAllParameters();
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkselected(dataNode.value.data.curve, curveList, curve, df, nodeId, {curve: curve.value, ...dataNode.value.data});
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
                     capacity: capacity.value || '',
@@ -102,8 +104,9 @@ export default defineComponent({
                     curve: curve.value || '',
                     position: position.value || '',
                     priority: priority.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -114,8 +117,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeCreated', getCurves);
-            df.on('nodeRemoved', getCurves);         
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
@@ -127,7 +140,7 @@ export default defineComponent({
             position.value = dataNode.value.data.position;
             priority.value = dataNode.value.data.priority;
 
-            getCurves();
+            getCurves(nodeId.value);
         });
         
         return {

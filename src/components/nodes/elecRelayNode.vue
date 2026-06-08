@@ -75,29 +75,32 @@ export default defineComponent({
 
         const setmanagedLineOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const getlineList = () => {
+        const getlineList = (id) => {
             if (props.lineList !== undefined) {
                 lineList.value = props.lineList.value;
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 helper.checkmultiselected(dataNode.value.data.managedline, lineList, managedline, df, nodeId, { managedline: managedline.value, ...dataNode.value.data }, dataNode);
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     managedline: managedline.value || '',
                     resistance: resistance.value || '',
                     tensionthreshold: tensionthreshold.value || '',
                     disconnectedwhenpowered: disconnectedwhenpowered.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -112,10 +115,22 @@ export default defineComponent({
                 lineList.value = props.lineList.value;
             }
 
-            df.on('connectionCreated', getlineList);
-            df.on('connectionRemoved', getlineList);
-            df.on('nodeDataChanged', getlineList);
-            df.on('nodeRemoved', getlineList);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getlineList(id);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getlineList(nodeId.value);
+                });
+            })
+            df.on('connectionCreated', function(id) {nextTick( () => {
+                    getlineList(id);
+                });
+            })
+            df.on('connectionRemoved', function(id) {nextTick( () => {
+                    getlineList(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
@@ -125,7 +140,7 @@ export default defineComponent({
             tensionthreshold.value = dataNode.value.data.tensionthreshold;
             disconnectedwhenpowered.value = dataNode.value.data.disconnectedwhenpowered;
             
-            getlineList();
+            getlineList(nodeId.value);
         });
         
         return {

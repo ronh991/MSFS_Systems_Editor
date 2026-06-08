@@ -61,20 +61,22 @@ export default defineComponent({
 
         const helper = new Helper;
 
-        const getPacks = () => {
+        const getPacks = (id) => {
             const exportdata = df.export();
             const packs = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Pack');
             if (packs) {
                 packsList.value = packs.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 //helper.checkselected(dataNode.value.data.bleedcurve, curveList, bleedcurve, df, nodeId, {bleedcurve: bleedcurve.value, ...dataNode.value.data});
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     volume: volume.value || '',
                     bleed: bleed.value || '',
@@ -82,8 +84,9 @@ export default defineComponent({
                     openingindicies: openingindicies.value || '',
                     openingnames: openingnames.value || '',
                     packpid: packpid.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
            }
         }
 
@@ -97,9 +100,18 @@ export default defineComponent({
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;   
 
-            df.on('nodeDataChanged', getPacks);
-            df.on('nodeCreated', getPacks);
-            df.on('nodeRemoved', getPacks);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getPacks(id);
+                });
+            })
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getPacks(nodeId.value);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getPacks(nodeId.value);
+                });
+            })
             
             volume.value = dataNode.value.data.volume;
             bleed.value = dataNode.value.data.bleed;
@@ -108,7 +120,7 @@ export default defineComponent({
             openingnames.value = dataNode.value.data.openingnames;
             packpid.value = dataNode.value.data.packpid;
 
-            getPacks();
+            getPacks(nodeId.value);
        });
         
         return {

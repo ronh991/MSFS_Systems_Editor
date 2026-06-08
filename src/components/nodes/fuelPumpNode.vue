@@ -15,7 +15,6 @@
             <el-form-item label="Pressure" label-position="left">
                 <el-input v-model="pressure" df-pressure size="small"></el-input>
             </el-form-item>
-
             <el-form-item label="Curve" label-position="left" size="small">
                 <el-select
                   v-model="curve"
@@ -104,36 +103,38 @@ export default defineComponent({
         
         const selectPumpType = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         const setOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
         // not used ??
         const setOneway = (val) => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
-        const getCurves = () => {
+        const getCurves = (id) => {
             const exportdata = df.export();
             const curves = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Curve');
             if (curves) {
                 curveList.value = curves.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
-            setAllParameters();
+            setAllParameters(id);
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
                     oneway: oneWay.value || '',
@@ -144,8 +145,9 @@ export default defineComponent({
                     autocondition: autoCondition.value || '',
                     circuitindex: circuitIndex.value || '',
                     pressuredecrease: pressureDecrease.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -156,8 +158,19 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeCreated', getCurves);
-            df.on('nodeRemoved', getCurves);           
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            // not nodeId.value because no changes to naming on curves
+            df.on('nodeCreated', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
+            df.on('nodeRemoved', function(id) {nextTick( () => {
+                    getCurves(id);
+                });
+            })
             
             itemname.value = dataNode.value.data.itemname;
             itemTitle.value = dataNode.value.data.itemtitle;
@@ -172,7 +185,7 @@ export default defineComponent({
             pressureDecrease.value = dataNode.value.data.pressuredecrease;
             oneWay.value = dataNode.value.data.oneway;
 
-            getCurves();
+            getCurves(nodeId.value);
         });
         
         return {

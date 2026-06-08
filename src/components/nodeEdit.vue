@@ -4,7 +4,7 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.93.0)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.94.0)</el-button>
       </div>
       <div>System Selected
           <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" placeholder="NONE Selected" style="width: 240px">
@@ -603,11 +603,6 @@ export default {
    const internalInstance = getCurrentInstance()
    internalInstance.appContext.app._context.config.globalProperties.$df = editor;
 
-    function relayManagedLinesupdate(id) {
-      const nodeGraph = editor.value.export();
-      nodeGraph.lineProperties = lineListProperties;
-    }
-
     function exportEditor() {
       setSavedState();
       const nodeGraph = editor.value.export();
@@ -1129,8 +1124,6 @@ export default {
         setSavedState();
       })
       editor.value.on('connectionRemoved', function(id) {
-        // relay - find all relays - remove managed line if found
-        //relayManagedLinesupdate(id);
         setSavedState();
         lineDialog.value = false;
       })

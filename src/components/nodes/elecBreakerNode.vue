@@ -84,15 +84,18 @@ export default defineComponent({
             });
         }
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     ratedcurrent: ratedcurrent.value || dataNode.value.data.name,
                     tripcurvetype: tripcurvetype.value || dataNode.value.data.name,
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -103,15 +106,18 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', setAllParameters);
-            
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
+           
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
             
             ratedcurrent.value = dataNode.value.data.ratedcurrent;
             tripcurvetype.value = dataNode.value.data.tripcurvetype;
 
-            setAllParameters();
+            setAllParameters(nodeId.value);
        });
         
         return {

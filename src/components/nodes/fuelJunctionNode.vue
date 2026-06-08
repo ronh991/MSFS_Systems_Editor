@@ -12,7 +12,7 @@
             <el-form-item label="Title" label-position="left">
                 <el-input v-model="itemTitle" df-itemtitle size="small"></el-input>
             </el-form-item>
-            <el-form-item label="Options"  v-for="(option, index) in optionList" label-position="top">
+            <el-form-item label="Options" v-for="(option, index) in optionList" label-position="top">
                 <el-select
                   v-model="optionList[index]"
                   multiple
@@ -190,10 +190,12 @@ export default defineComponent({
             }
         })
 
-        const setitemname = () => {
-            if (itemname.value === null) {
-               itemname.value = dataNode.value.data.name;  
-            } 
+        const setitemname = (id) => {
+            if (id === nodeId.value) {
+                if (itemname.value === null) {
+                itemname.value = dataNode.value.data.name;  
+                } 
+            }
         }
 
         onMounted(async () => {
@@ -202,11 +204,13 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', (id) => {
-                connections.value = getConnections().connections;
-                setOneWayList();
-                setitemname();
-            });
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    connections.value = getConnections().connections;
+                    // why no parameters
+                    setOneWayList();
+                    setitemname(id);
+                });
+            })
 
             connections.value = getConnections().connections;
             itemindex.value = dataNode.value.data.index;
@@ -224,7 +228,7 @@ export default defineComponent({
             const outputonlylines = dataNode.value.data.outputonlylines || [];
             let onewaylist = (inputonlylines.length || outputonlylines.length) ? [...inputonlylines, ...outputonlylines] : dataNode.value.data.onewaylist;
             setOneWayList(onewaylist);
-            setitemname();
+            setitemname(nodeId.value);
 
         });
         

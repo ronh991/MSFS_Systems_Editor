@@ -110,12 +110,15 @@ export default defineComponent({
             }
         })
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -125,16 +128,17 @@ export default defineComponent({
             dataNode.value = df.getNodeFromId(nodeId.value)
             connections.value = getConnections().connections;
 
-            //df.on('nodeCreated', setAllParameters);
-            //df.on('nodeRemoved', setAllParameters);
-            df.on('nodeDataChanged', setAllParameters);           
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
 
             // Data
 
-            setAllParameters();
+            setAllParameters(nodeId.value);
             
        });
         

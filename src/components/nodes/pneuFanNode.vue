@@ -51,17 +51,20 @@ export default defineComponent({
 
         const helper = new Helper;
 
-        const setAllParameters = () => {
+        const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                if (id === nodeId.value) {
                 const data = {
+                    ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     circuit: circuit.value || '',
                     speeduptime: speeduptime.value || '',
                     staticpressure: staticpressure.value || '',
                     maxflow: maxflow.value || '',
-                    ...dataNode.value.data };
+                };
                 df.updateNodeDataFromId(nodeId.value, data);
+                }
             }
         }
 
@@ -72,7 +75,10 @@ export default defineComponent({
             nodeId.value = el.value.parentElement.parentElement.id.slice(5)
             dataNode.value = df.getNodeFromId(nodeId.value)
 
-            df.on('nodeDataChanged', setAllParameters);
+            df.on('nodeDataChanged', function(id) {nextTick( () => {
+                    setAllParameters(id);
+                });
+            })
             
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
@@ -82,7 +88,7 @@ export default defineComponent({
             staticpressure.value = dataNode.value.data.staticpressure;
             maxflow.value = dataNode.value.data.maxflow;
 
-            setAllParameters();
+            setAllParameters(nodeId.value);
        });
         
         return {
