@@ -67,7 +67,7 @@ export default defineComponent({
                     ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
-                    oneway: oneWay.value || '',
+                    oneway: oneWay.value || false,
                     circuitindex: circuitIndex.value || '',
                     openingtime: openingTime.value || '',
                 };

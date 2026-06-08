@@ -131,7 +131,7 @@ export default defineComponent({
                     liquidconsumption: liquidconsumption.value || '',
                     minimalpressure: minimalpressure.value || '',
                     actuatortype: actuatortype.value || '',
-                    mastercylinder: mastercylinder.value || '',
+                    mastercylinder: mastercylinder.value || false,
                     redundancy: redundancy.value || '',
                     assistancepct: assistancepct.value || '',
                     wearandtear: wearandtear.value || '',

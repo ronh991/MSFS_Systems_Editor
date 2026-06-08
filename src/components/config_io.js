@@ -514,10 +514,14 @@ export default class Config {
 		case 'PTU':
 			nodeStr += this.writeNodeConfig({
 				'NormalPressure': node.data.normalpresure || '',
-				'Reversible': (node.data.reversible ? 'Yes' : '') || '',
 				'NominalDisplacement': node.data.nominaldisplacement || '',
 				'WearAndTearCollision': node.data.wearandtear || '',
  			})
+			if (node.data.reversible === true) {
+				nodeStr += this.writeNodeConfig({
+					'Reversible': (node.data.reversible ? 'Yes' : 'No') || '',
+				});
+			}
 			break;
 		case 'HJunction':
 			nodeStr += this.writeNodeConfig({
@@ -572,11 +576,15 @@ export default class Config {
             'LiquidConsumption': node.data.liquidconsumption || '',
             'MinimalPressure': node.data.minimalpressure || '',
             'Type': node.data.actuatortype || '',
-            'MasterCylinder': node.data.mastercylinder || '',
             'Redundancy': node.data.redundancy || '',
             'AssistancePct': node.data.assistancepct || '',
 			'WearAndTearCollision': node.data.wearandtear || '',
           });
+		  if (node.data.mastercylinder === true) {
+			nodeStr += this.writeNodeConfig({
+            	'MasterCylinder': node.data.mastercylinder || false,
+			});
+		  }
 		  break;
 		case 'HCombiner':
 			nodeStr = '';

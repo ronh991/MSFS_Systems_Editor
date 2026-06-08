@@ -75,7 +75,7 @@ export default defineComponent({
                     itemname: itemname.value || '',
                     normalpresure: normalpresure.value || '',
                     nominaldisplacement: nominaldisplacement.value || '',
-                    reversible: reversible.value || '',
+                    reversible: reversible.value || false,
                     wearandtear: wearandtear.value || '',
                 };
                 df.updateNodeDataFromId(nodeId.value, data);

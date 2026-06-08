@@ -137,7 +137,7 @@ export default defineComponent({
                     ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     itemTitle: itemTitle.value || '',
-                    oneway: oneWay.value || '',
+                    oneway: oneWay.value || true,
                     pressure: pressure.value || '',
                     tankfuelrequired: tankFuelRequired.value || '',
                     curve: curve.value || '',
