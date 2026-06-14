@@ -206,6 +206,7 @@ export default class Config {
 			PValve: 'Valve',
 			Fan: 'Fan',
 			Curve: 'Curve',
+			Parameters: 'Parameters',
 		},
 		{
 			Curve: 'Curve',
@@ -699,6 +700,12 @@ export default class Config {
 			});
 		  }
           break;
+        case 'Parameters':
+          nodeStr = (node.data.areasmintemperature ? 'AreasMinTemperature =' + node.data.areasmintemperature + '\n'  : '\n');
+          nodeStr += (node.data.areasmaxtemperature ? 'AreasMaxTemperature =' + node.data.areasmaxtemperature + '\n' : '\n');
+          nodeStr += (node.data.maxdifferencialpressure ? 'MaxDifferencialPressure =' + node.data.maxdifferencialpressure + '\n' : '\n');
+       	  nodeStr += (node.data.areasmaxtemperatureinput ? 'AreasMaxTemperatureInput =' + node.data.areasmaxtemperatureinput : '');
+          break;
         case 'PAPU':
           nodeStr += this.writeNodeConfig({
             'OutputFlow': node.data.outflow || '',
@@ -858,6 +865,10 @@ export default class Config {
 
   	const nodeList = [];
   	const lineList = [];
+	// for Pneumatics standalone params
+	let paramsStarted = false;
+	let paramsCompleted = false;
+	let paramParts = ['','Parameters','1','Name: Common Parameters'];
   	const linesincfg = configStr.replaceAll('\\n','\n').split('\n');
 	var sysID_df = 0;
 	var found_sysID = false;
@@ -899,11 +910,41 @@ export default class Config {
 					lineList.push(parsedLine);
 		  		}				
 			} else {
+				// check if param done
+				if (paramsStarted && !paramsCompleted) {
+					paramsCompleted = true;
+					paramParts[0] = paramParts[1] + paramParts[2] + paramParts[3]
+					const parsedParams = this.parseNode(paramParts, sysID)
+					if (Object.keys(parsedParams).length) {
+						nodeList.push(parsedParams);
+					}
+				}
 		  		const parsedNode = this.parseNode(nodeParts, sysID);
 		  		if (Object.keys(parsedNode).length) {
 					nodeList.push(parsedNode);
 		  		}
 		  	}
+		} else {
+			// has '= but no dot
+			if (sysID_df === 3 && line.includes('=') && !line.includes('Version')) {
+				paramsStarted = true;
+				const lineparts = line.split('=');
+
+				switch(lineparts[0].trim()) {
+					case 'AreasMinTemperature':
+						paramParts[3] += '#AreasMinTemperature:' + lineparts[1];
+						break;
+					case 'AreasMaxTemperature':
+						paramParts[3] += '#AreasMaxTemperature:' + lineparts[1];
+						break;
+					case 'MaxDifferencialPressure':
+						paramParts[3] += '#MaxDifferencialPressure:' + lineparts[1];
+						break;
+					case 'AreasMaxTemperatureInput':
+						paramParts[3] += '#AreasMaxTemperatureInput:' + lineparts[1];
+						break;
+				}
+			}
 		}
   	});
     // could sort the nodeList here so the resulting graph has a more logical flow from tank to engine
@@ -1140,28 +1181,7 @@ export default class Config {
             	"pos_x": countx * offset_x,
             	"pos_y": county * offset_y,
     		}
-      } else {
-		// test to see if parameters for Pneumatics
-		// 
-		if (sysID === 3) {
-			//pneumatics
-			if (count_parameters > 4) {
-				graph.drawflow.Home.data[i] = {
-					"id": i,
-					"name": 'Parameters.1',
-					"data": node.data,
-					"class": 'Parameters', /* naming things here */
-					"html": 'Parameters',
-					"typenode": "vue",
-					"inputs": {},
-					"outputs": {},
-					"pos_x": countx * offset_x,
-					"pos_y": county * offset_y,
-				}
-			}
-			//count_parameters++;
-		}
-	  }
+       }
 	  // to add HCombiner/HSeparator nodes later
 	  maxNodei = i + 1;
 	}
@@ -1936,6 +1956,10 @@ export default class Config {
 					case 'Parameters':
 						return {
 							'Name': 'itemname',
+							'AreasMinTemperature': 'areasmintemperature',
+							'AreasMaxTemperature': 'areasmaxtemperature',
+							'MaxDifferencialPressure': 'maxdifferencialpressure',
+							'AreasMaxTemperatureInput': 'areasmaxtemperatureinput',
 							'Class': 'Parameters',
 						}
 					case 'Line':

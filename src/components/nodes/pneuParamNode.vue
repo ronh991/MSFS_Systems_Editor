@@ -7,16 +7,16 @@
         
         <div ref="properties">
             <el-form-item label="Areas Min Temp" label-position="left">
-                <el-input v-model="areasmintemp" df-areasmintemp size="small"></el-input>
+                <el-input v-model="areasmintemperature" df-areasmintemperature size="small"></el-input>
             </el-form-item>
             <el-form-item label="Areas Max Temp" label-position="left">
-                <el-input v-model="areasmaxtemp" df-areasmaxtemp size="small"></el-input>
+                <el-input v-model="areasmaxtemperature" df-areasmaxtemperature size="small"></el-input>
             </el-form-item>
             <el-form-item label="Max Diff Pressure" label-position="left">
                 <el-input v-model="maxdifferencialpressure" df-maxdifferencialpressure size="small"></el-input>
             </el-form-item>
             <el-form-item label="Areas Max Temp Input" label-position="left">
-                <el-input v-model="areasmaxtempinput" df-areasmaxtempinput size="small"></el-input>
+                <el-input v-model="areasmaxtemperatureinput" df-areasmaxtemperatureinput size="small"></el-input>
             </el-form-item>
         </div>
     </el-form>
@@ -41,10 +41,10 @@ export default defineComponent({
         const itemindex = ref('');
 
         // Data items
-        const areasmintemp = ref();
-        const areasmaxtemp = ref();
+        const areasmintemperature = ref();
+        const areasmaxtemperature = ref();
         const maxdifferencialpressure = ref();
-        const areasmaxtempinput = ref();
+        const areasmaxtemperatureinput = ref();
 
         const helper = new Helper;
 
@@ -54,10 +54,10 @@ export default defineComponent({
                 if (id === nodeId.value) {
                 const data = {
                     ...dataNode.value.data, 
-                    areasmintemp: areasmintemp.value || '',
-                    areasmaxtemp: areasmaxtemp.value || '',
+                    areasmintemperature: areasmintemperature.value || '',
+                    areasmaxtemperature: areasmaxtemperature.value || '',
                     maxdifferencialpressure: maxdifferencialpressure.value || '',
-                    areasmaxtempinput: areasmaxtempinput.value || '',
+                    areasmaxtemperatureinput: areasmaxtemperatureinput.value || '',
                 };
                 df.updateNodeDataFromId(nodeId.value, data);
                 }
@@ -79,16 +79,16 @@ export default defineComponent({
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
             
-            areasmintemp.value = dataNode.value.data.areasmintemp;
-            areasmaxtemp.value = dataNode.value.data.areasmaxtemp;
+            areasmintemperature.value = dataNode.value.data.areasmintemperature;
+            areasmaxtemperature.value = dataNode.value.data.areasmaxtemperature;
             maxdifferencialpressure.value = dataNode.value.data.maxdifferencialpressure;
-            areasmaxtempinput.value = dataNode.value.data.areasmaxtempinput;
+            areasmaxtemperatureinput.value = dataNode.value.data.areasmaxtemperatureinput;
 
             setAllParameters(nodeId.value);
        });
         
         return {
-            el, itemindex, areasmintemp, areasmaxtemp, maxdifferencialpressure, areasmaxtempinput, 
+            el, itemindex, areasmintemperature, areasmaxtemperature, maxdifferencialpressure, areasmaxtemperatureinput, 
               
         }
 
