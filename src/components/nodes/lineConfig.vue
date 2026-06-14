@@ -502,43 +502,45 @@ export default {
                 pneufanComponentList.value = linefancomponents.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
             }
         }
-        const getpneulineData = () => {
-            // if (!df.data) return { connections: [] };
-            const exportdata = df.export();
-            if(dataModel.value.itemname !== undefined)  {
-                const linenodenames = dataModel.value.itemname.split("To");
 
-                // for all other hydralic lines
-                linesource.value = [];
-                linedest.value = [];
-                const linecomponents =  Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class !== '');
-                if (linecomponents.length > 0) {
-                    const result = Object.entries(linecomponents.value).filter(([key, value]) => (value.name == linenodenames[0] || value.name == linenodenames[1]))
-                    if (result !== undefined) {
-                        if (result.length > 0) {
-                            //need to loop all results
-                            result.forEach((r) => {
-                                //if (r[1].class !== 'PTU' && r[1].class !== 'HCombiner' && r[1].class !== 'HSeparator') {
-                                    const selfCon0 = getConnections(r[1].nodeid);
-                                    if (selfCon0.connections.length > 0) {
-                                        selfCon0.connections.forEach((c) => {
-                                            if (dataModel.value.itemname === c.name) {
-                                                if(c.inputname !== '') {
-                                                    linedest.value = [c.inputname, ...linedest.value];
-                                                }
-                                                if(c.outputname !== '') {
-                                                    linesource.value = [c.outputname, ...linesource.value];
-                                                }
-                                            }
-                                        });
-                                    }
-                                //}
-                            });
-                        }
-                    }
-                }
-            }
-        }
+        // not needed - causes error
+        // const getpneulineData = () => {
+        //     // if (!df.data) return { connections: [] };
+        //     const exportdata = df.export();
+        //     if(dataModel.value.itemname !== undefined)  {
+        //         const linenodenames = dataModel.value.itemname.split("To");
+
+        //         // for all other hydralic lines
+        //         linesource.value = [];
+        //         linedest.value = [];
+        //         const linecomponents =  Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class !== '');
+        //         if (linecomponents.length > 0) {
+        //             const result = Object.entries(linecomponents.value).filter(([key, value]) => (value.name == linenodenames[0] || value.name == linenodenames[1]))
+        //             if (result !== undefined) {
+        //                 if (result.length > 0) {
+        //                     //need to loop all results
+        //                     result.forEach((r) => {
+        //                         //if (r[1].class !== 'PTU' && r[1].class !== 'HCombiner' && r[1].class !== 'HSeparator') {
+        //                             const selfCon0 = getConnections(r[1].nodeid);
+        //                             if (selfCon0.connections.length > 0) {
+        //                                 selfCon0.connections.forEach((c) => {
+        //                                     if (dataModel.value.itemname === c.name) {
+        //                                         if(c.inputname !== '') {
+        //                                             linedest.value = [c.inputname, ...linedest.value];
+        //                                         }
+        //                                         if(c.outputname !== '') {
+        //                                             linesource.value = [c.outputname, ...linesource.value];
+        //                                         }
+        //                                     }
+        //                                 });
+        //                             }
+        //                         //}
+        //                     });
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         watchEffect(() => {
             dataModel.value = props.lineData;
@@ -583,7 +585,7 @@ export default {
                 pneuvalvecomponent.value = dataModel.value.pneuvalvecomponent || '';
                 getpneulineValveList();
                 getpneulineFanList();
-                getpneulineData();
+                //getpneulineData();
             }
             // no liquid lines
 

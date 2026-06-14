@@ -927,7 +927,7 @@ export default class Config {
 		  	}
 		} else {
 			// has '= but no dot
-			if (sysID_df === 3 && line.includes('=') && !line.includes('Version')) {
+			if (sysID_df === 3 && line.includes('=') && !line.includes('Version') && !line.includes('Major') && !line.includes('Minor')) {
 				paramsStarted = true;
 				const lineparts = line.split('=');
 
@@ -1255,7 +1255,7 @@ export default class Config {
 						}
 						
 						// make a function
-						helper.setgraphData(graph, conArray[0], conArray[1]);
+						helper.setgraphData(graph, concompArray[1][0].trim(), concompArray[1][1].replace(')','').trim());
 					} else if (line.lineconnection.includes(',')) {
 						//const conName = conArray[0];
 						line.lineconnection = [];
@@ -1272,7 +1272,7 @@ export default class Config {
 						}
 						
 						const conArray = line.lineconnection.split(',');
-						helper.setgraphData(graph, conArray[0], conArray[1]);
+						helper.setgraphData(graph, conArray[0].trim(), conArray[1].trim());
 					}
 				}
 
