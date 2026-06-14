@@ -4,7 +4,7 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.95.0)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.96.0)</el-button>
       </div>
       <div>System Selected
           <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" placeholder="NONE Selected" style="width: 240px">
@@ -46,7 +46,8 @@
           
           <div class="list">
             Lines:
-            <div class="line-items" v-for="line in lineList" :key="line.Name">
+            <div class="line-items" v-for="line in lineList" :key="line.atozid">
+            <!-- <div class="line-items" v-for="line in lineList" :key="line.Name"> -->
               <div v-if="line.showinList" class="edit-line" :class="{active: line.data.itemname}" @click="showLine(line.name)"><el-icon><Setting /></el-icon></div>
               <div v-if="line.showinList" class="line-name">{{line.name}}</div>
             </div>
@@ -102,7 +103,7 @@
 
     <span>Import MSFS Config - plain text example [FUEL_SYSTEM]</span>
     <el-form-item>
-        <el-input v-model="importConfigField" :rows="6" type="textarea" placeholder="Paste Data" maxlength="15000"></el-input>
+        <el-input v-model="importConfigField" :rows="6" type="textarea" placeholder="Paste Data" maxlength="75000"></el-input>
     </el-form-item>
     <el-button type="primary" @click="doConfigImport">
       Import MSFS Config
@@ -144,9 +145,10 @@
 import '../drawflow/drawflow.min.css'
 import Drawflow from 'drawflow'
 import '../assets/style.css' 
-import { onMounted, shallowRef, h, getCurrentInstance, render, readonly, ref, computed, nextTick, useTemplateRef} from 'vue'
+import { onMounted, onUnmounted, shallowRef, h, getCurrentInstance, render, readonly, ref, computed, nextTick, useTemplateRef, inject} from 'vue'
 import Config from './config_io.js'
-//import Helper from './helper.js'
+import Helper from './helper.js'
+//import mitt from 'mitt'
 
 // Common
 import CurveNode from './nodes/CurveNode.vue'
@@ -201,6 +203,7 @@ import pneuOutletNode from './nodes/pneuOutletNode.vue'
 import pneuValveNode from './nodes/pneuValveNode.vue'
 import pneuFanNode from './nodes/pneuFanNode.vue'
 import pneuJunctionNode from './nodes/pneuJunctionNode.vue'
+import pneuParamNode from './nodes/pneuParamNode.vue'
 
 // Liquid Dropping - requires flight_model.cfg CP and reference_points.cfg Drop Doors
 import liquTankNode from './nodes/liquTankNode.vue'
@@ -208,7 +211,6 @@ import liquDoorNode from './nodes/liquDoorNode.vue'
 import liquScoopNode from './nodes/liquScoopNode.vue'
 
 // Burner System - requires a Fuel System
-
 
 import instructions from './instructions.vue'
 
@@ -219,6 +221,9 @@ export default {
     instructions,
   },
   setup() {
+
+    const emitter = inject('emitter');
+
     // systemType Options
     const systemType = readonly([
     {
@@ -257,7 +262,7 @@ export default {
       version: '',
       sysID: 5,
     },
-  ])
+    ])
   // list the available nodes and the input and output count
   const listNodes = readonly([ [
         {
@@ -530,6 +535,12 @@ export default {
             output:0,
         },
         {
+            name: 'Parameters',
+            item: 'Parameters',
+            input:0,
+            output:0,
+        },
+        {
             name: 'Curve',
             item: 'Curve',
             input:0,
@@ -587,7 +598,7 @@ export default {
    const instructionsDialog = ref(false);
    const systype = ref({});
    const issysIDDisabled = ref(false);
-//const sysID = ref(0);
+  //const sysID = ref(0);
 
    let lineListProperties = [];
 
@@ -595,9 +606,11 @@ export default {
    
    //const test = 1;
 
+   //const emitter = mitt();
+
 
    const config_io = new Config;
-   //const helper = new Helper
+   const helper = new Helper
 
    const Vue = { version: 3, h, render };
    const internalInstance = getCurrentInstance()
@@ -627,12 +640,17 @@ export default {
       dialogVisible.value = true;
     }
 
+    function updateNode() {
+        setSavedState();
+    }
+
     function clearNodes() {
       if (clearConfirm.value){
         editor.value.clear(); 
         systype.value = systemType[0];
         clearConfirm.value = false;
         issysIDDisabled.value = false;
+        lineDialog.value = false;
         lineListProperties = [];
         setSavedState();
       } else {
@@ -640,7 +658,7 @@ export default {
       }
     }
 
-    function doImport(data) {
+    function doImport(data, lineCfgdata) {
       if ((importField || data) && editor && editor.value) {
         const currentData = editor.value.export();
         try {
@@ -649,6 +667,27 @@ export default {
           const lineProperties = importData.lineProperties;
           if (lineProperties) {
             lineListProperties = lineProperties;
+          } else if(lineCfgdata) {
+            lineListProperties = lineCfgdata;
+            importData.lineProperties = lineCfgdata;
+            lineCfgdata.forEach((line) => {
+              // need to set params to poper objects and arrays
+              switch (line.sysID) {
+                case 0:
+                  //Fuel nothing to set
+                  break;
+                case 1:
+                  break;
+                case 2:
+                  break;
+                case 3:
+                  break;
+                case 4:
+                  //Liquid nothing no lines here
+                  break;
+              }
+              lineDataUpdate(line);
+            });
           }
           editor.value.import(importData);
           importError.value = '';
@@ -666,8 +705,9 @@ export default {
         try {
           const fieldStr = importConfigField.value.replace('\"','');
           const result = config_io.importConfig(fieldStr, systype.value.sysID, systemType);
+          lineListProperties = result[1];
           importConfigField.value = '';
-          doImport(result);
+          doImport(result[0], result[1]);
         }
         catch(e) {
           importError.value = 'Error importing data.' + e;
@@ -779,7 +819,7 @@ export default {
     editor.value.canvas_y = panY;
   }
 
-  // get node list by system - assume data pertains to only one selected system that the user is working on
+  // get node list of all nodes in drawflow
   function getNodelist() {
     const exportdata = editor.value.export();
     return (exportdata && exportdata.drawflow && exportdata.drawflow.Home && Object.values(exportdata.drawflow.Home.data)) || [];
@@ -797,7 +837,9 @@ export default {
   }
 
   function getNextKey(val) {
-    const keys = val.map(v => (v.data && v.data.index) || 1);
+    // set to zero for any non data nodes
+    //const keys = val.map(v => (v.data && v.data.index) || "0");
+    const keys = val.map(v => (v.data.index) || 0);
     const sortedArr = [...keys].sort((a, b) => a - b);
     let lowest = 1;
     for (let i = 1; i < sortedArr.length +1; i++) {
@@ -842,6 +884,7 @@ export default {
       if (exportdata) {
         nodesByType.value = getNodesByTypes(systype.value.sysID);
         lineList.value = extractInputs();
+        // not neded??
         lineComponentNodeNamesList.value = getLineComponentNodeNames();
         // depends on system
         localStorage.setItem('fuelSystemLines', JSON.stringify(lineListProperties));
@@ -891,19 +934,21 @@ export default {
     let inputs = [];
     Object.entries(df).forEach(([key,node]) => {
       const inp = getConnections(node.inputs);
+      const outp = getConnections(node.outputs);
       inp.forEach( i => {
-        const src = df[i.node];
-        const srcName = src.data.itemname || src.data.name ;
-
         const nodeida = i.node+i.input;
         const nodeidz = key;
 
         const nodeclassa = editor.value.getNodeFromId(i.node).class;
         const nodeclassz = editor.value.getNodeFromId(key).class;
 
+        const src = df[i.node];
+        const srcName = src.data.itemname || src.data.name ;
         const dest = df[key];
         const destName = dest.data.itemname || dest.data.name;
-        const name = `${srcName}_To_${destName}`;
+        // PTU special naming
+
+        const name = `${srcName}To${destName}`;
         const lineProperties = getLineListProperties(name) || {};
 
         // maybe a combo of start and end nodes as a key
@@ -948,12 +993,6 @@ export default {
     const exportdata = editor.value.export();
   }
 
-  // determine if you show in list
-
-  function getshowinList() {
-
-  }
-
   // initialize code in app
    onMounted(() => {
 
@@ -987,6 +1026,10 @@ export default {
         elements[i].addEventListener('touchend', drop, false);
         elements[i].addEventListener('touchmove', positionMobile, false);
         elements[i].addEventListener('touchstart', drag, false );
+
+        //
+        //elements[i].addEventListener('updatenode', updateNode, false );
+
       }
         
        const id = document.getElementById("drawflow");
@@ -999,9 +1042,9 @@ export default {
        //editor.value.changeModule('MSFS_Systems');
 
        editor.value.start();
-       //editor.value.zoom_min = 0.25;
-       //editor.value.zoom_min = 2.0;
-       editor.value.zoom = 0.75;
+       editor.value.zoom_min = 0.05;
+       editor.value.zoom_max = 2.0;
+       editor.value.zoom = 0.5;
        editor.value.zoom_refresh();
             // const zoomAmount = response.data.data.zoom;
 
@@ -1060,6 +1103,7 @@ export default {
        editor.value.registerNode('PValve', pneuValveNode, {}, {});
        editor.value.registerNode('Fan', pneuFanNode, {}, {});
        editor.value.registerNode('PJunction', pneuJunctionNode, {lineList}, {});
+       editor.value.registerNode('Parameters', pneuParamNode, {lineList}, {});
       //Liquid Dropping System
        editor.value.registerNode('LTank', liquTankNode, {}, {});
        editor.value.registerNode('Door', liquDoorNode, {}, {});
@@ -1130,13 +1174,25 @@ export default {
       editor.value.on('connectionSelected', function(conn) {
         const outputNode = editor.value.getNodeFromId(conn.output_id);
         const inputNode = editor.value.getNodeFromId(conn.input_id);
-        const lineName = `${outputNode.data.itemname}to${inputNode.data.itemname}`;
+        const lineName = `${outputNode.data.itemname}To${inputNode.data.itemname}`;
         showLine(lineName);
       })
+
+      // mitt emitter
+      emitter.on('updatenode', function() {
+        updateNode();
+        setSavedState();
+      });
+
       // for debugging
       window.editor = editor.value;
       setSavedState();
   })
+
+onUnmounted(() => {
+  // Crucial: teardown listener when component destroys
+  emitter.off('updatenode') 
+})
 
   return {
     exportEditor, 
@@ -1170,6 +1226,8 @@ export default {
     instructionsDialog,
     lineComponentNodeNamesList,
     issysIDDisabled,
+    //updatenode,
+    updateNode,
   }
 
   }

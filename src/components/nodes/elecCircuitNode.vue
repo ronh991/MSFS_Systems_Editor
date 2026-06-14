@@ -42,7 +42,7 @@
                 >
                   <el-option
                     v-for="item in consumerList"
-                    :key="item.index"
+                    :key="item.nodeid"
                     :label="item.name"
                     :value="item"
                   />
@@ -99,11 +99,23 @@
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
 import Helper from '../helper';
+import { inject } from 'vue'
+
+// export default {
+//     props: [
+//         'lineData',
+//         'sysID'
+//     ],
+//     emits: ['update', 'closed'],
+//     setup(props, { emit }) {
 
 export default defineComponent({
     components: {
         nodeHeader
     },
+    // props: [],
+    // emits: { updatenode: () => true },
+    // setup(props, { emit }) {
     setup() {
         const el = ref(null);
         const nodeId = ref(0);
@@ -129,6 +141,9 @@ export default defineComponent({
         const cType = ref();
 
         const helper = new Helper;
+
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
 
         const circuitTypeOptions = readonly([
             'CIRCUIT_INVALID',
@@ -208,6 +223,10 @@ export default defineComponent({
             'Battery',
             'Custom',
         ]);
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
 
         const setCircuitTypeOption = () => {
             nextTick( () => {
@@ -240,24 +259,34 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                helper.checkmultiselected(dataNode.value.data.consumerCfg, consumerList, consumerCfg, df, nodeId, { consumerCfg: consumerCfg.value, ...dataNode.value.data }, dataNode);
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    consumerCfg: consumerCfg.value || '',
-                    circuittype: circuittype.value || '',
-                    amperage: amperage.value || '',
-                    voltage: voltage.value || '',
-                    cType: cType.value || '',
-                    wattage: wattage.value || '',
-                    resistance: resistance.value || '',
-                    resistancemin: resistancemin.value || '',
-                    resistancemax: resistancemax.value || '',
-                    capacity: capacity.value || '',
-                    chargecrate: chargecrate.value || '',
-                    wearandtear: wearandtear.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    //if (typeof dataNode.value.data.consumerCfg === "string" || (dataNode.value.data.consumerCfg !== undefined && !helper.isObject(dataNode.value.data.consumerCfg))) {
+                        // on import of cfg - node is just by name - need to make object
+                        // get node by name
+                    //     getConsumers(-1);
+                    //     let savename = dataNode.value.data.consumerCfg;
+                    //     dataNode.value.data.consumerCfg = [];
+                    //     dataNode.value.data.consumerCfg.push(helper.getNodebyName(savename, df, 'ConsumerCfg'));
+                    // } else {
+                        helper.checkselected(dataNode.value.data.consumerCfg, consumerList, consumerCfg, df, nodeId, { consumerCfg: consumerCfg.value, ...dataNode.value.data });
+                    //}
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        consumerCfg: consumerCfg.value || '',
+                        circuittype: circuittype.value || '',
+                        amperage: amperage.value || '',
+                        voltage: voltage.value || '',
+                        cType: cType.value || '',
+                        wattage: wattage.value || '',
+                        resistance: resistance.value || '',
+                        resistancemin: resistancemin.value || '',
+                        resistancemax: resistancemax.value || '',
+                        capacity: capacity.value || '',
+                        chargecrate: chargecrate.value || '',
+                        wearandtear: wearandtear.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }
@@ -274,18 +303,18 @@ export default defineComponent({
                 });
             })
             df.on('nodeCreated', function(id) {nextTick( () => {
-                    getConsumers(nodeId.value);
+                    getConsumers(id);
                 });
             })
             df.on('nodeRemoved', function(id) {nextTick( () => {
-                    getConsumers(nodeId.value);
+                    getConsumers(id);
                 });
             })
 
             itemname.value = dataNode.value.data.itemname;
             itemindex.value = dataNode.value.data.index;
             
-            consumerCfg.value = dataNode.value.data.consumerCfg;
+            consumerCfg.value = dataNode.value.data.consumerCfg || [];
             circuittype.value = dataNode.value.data.circuittype;
             cType.value = dataNode.value.data.cType;
             amperage.value = dataNode.value.data.amperage;
@@ -303,7 +332,8 @@ export default defineComponent({
         
         return {
             el, itemname, itemindex, circuittype, consumerCfg, cType, amperage, voltage, wattage, resistance, resistancemin, resistancemax, wearandtear, capacity, chargecrate, consumerList, circuitTypeOptions, consumerTypeOptions,
-            setConsumerCfgOption, setConsumerTypeOption, setCircuitTypeOption
+            setConsumerCfgOption, setConsumerTypeOption, setCircuitTypeOption,
+            //updatenode
         }
 
     }    

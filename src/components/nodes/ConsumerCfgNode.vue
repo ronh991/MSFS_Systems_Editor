@@ -52,6 +52,7 @@
 <script>
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -77,10 +78,17 @@ export default defineComponent({
 
         const cType = ref();
 
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+
         const consumerTypeOptions = readonly([
             'Battery',
             'Custom',
         ]);
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
         
         const selectConsumerType = () => {
             nextTick( () => {
@@ -92,20 +100,21 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    amperage: amperage.value || '',
-                    voltage: voltage.value || '',
-                    cType: cType.value || '',
-                    wattage: wattage.value || '',
-                    resistance: resistance.value || '',
-                    resistancemin: resistancemin.value || '',
-                    resistancemax: resistancemax.value || '',
-                    capacity: capacity.value || '',
-                    chargecrate: chargecrate.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        amperage: amperage.value || '',
+                        voltage: voltage.value || '',
+                        cType: cType.value || '',
+                        wattage: wattage.value || '',
+                        resistance: resistance.value || '',
+                        resistancemin: resistancemin.value || '',
+                        resistancemax: resistancemax.value || '',
+                        capacity: capacity.value || '',
+                        chargecrate: chargecrate.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }
@@ -135,7 +144,7 @@ export default defineComponent({
             capacity.value = dataNode.value.data.capacity;
             chargecrate.value = dataNode.value.data.chargecrate;
             
-            setAllParameters(id);
+            setAllParameters(nodeId.value);
         });
         
         return {

@@ -9,6 +9,9 @@
             <el-form-item label="Name" label-position="left">
                 <el-input v-model="itemname" df-itemname  size="small"></el-input>
             </el-form-item>
+            <el-form-item label="Wear & Tear" label-position="left">
+                <el-input v-model="wearandtear" df-wearandtear size="small" type="textarea" :rows="3"></el-input>
+            </el-form-item>
         </div>
     </el-form>
     </div>
@@ -17,6 +20,7 @@
 <script>
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, computed } from 'vue'
 import nodeHeader from './nodeHeader.vue'
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -29,7 +33,15 @@ export default defineComponent({
         const dataNode = ref({});
         const itemname = ref('');
         const itemindex = ref('');
+        const wearandtear = ref('');
         const connections = ref([]);
+
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
 
         const getConnections = () => {
             // if (!df.data) return { connections: [] };
@@ -110,12 +122,14 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
-            }
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        wearandtear: wearandtear.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
+                }
             }
         }
 
@@ -129,14 +143,16 @@ export default defineComponent({
                 setAllParameters(id);
             });
 
-            itemname.value = dataNode.value.data.name;  
+            itemname.value = dataNode.value.data.itemname;  
             itemindex.value = dataNode.value.data.index;
             
+            wearandtear.value = dataNode.value.data.wearandtear;
+
             setAllParameters(nodeId.value);
         });
         
         return {
-            el, itemname, itemindex, connections
+            el, itemname, itemindex, wearandtear, connections
         }
 
     }    

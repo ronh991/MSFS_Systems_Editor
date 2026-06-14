@@ -17,6 +17,20 @@
     <a href="https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/CFG_Files/systems_cfg.htm#FUEL_SYSTEM">docs.flightsimulator.com (systems.cfg)</a>
   </p>
 
+  <br />
+  <p><strong>Naming Nodes and Components</strong></p>
+
+  <p>Names must be alpha-numeric only - Don't use special characters (.<>'"+-?;:!@#$%^&*) You can use underscore but is not recommended.</p>
+
+  <p> Periods are an issue due to special naming for some connections on Components like PTU (PTU.MotorInput, PTU.PumpOutput).</p>
+
+  <p>Case matters in most cases, so keep names simple.</p>,
+
+  <p>Node amd Component names must be unique.  The line names must also be unique and follow the form nodesourcenameTonodedestinationname, but since the nodenames are unique the line name will be unique.  The Line names must use
+    the nodenames with 'To' between them - case matters.
+  </p>
+
+  <br />
   <p>It is possible that future versions of MSFS will change some system properties. I hope to update the app to match changes. But this project is also available as open source: <a href="https://github.com/ronh991/MSFS_Systems_Editor">github.com/ronh991/MSFS_Fuel_System_Editor</a></p>
 
   <h2><strong>User Interface</strong></h2>
@@ -88,6 +102,7 @@
 
   <p>The Import dialog offers a place to paste either a Node type or Config type block of text. When you import a Config block, the nodes will be connected but the order and position will requires some re-positioning to be more useful.</p>
 
+  <p>For Config imports - </p><strong>SEE Naming Nodes and Components </strong><p>above.</p>
   <p>ronh991 GS614</p> 
 
 

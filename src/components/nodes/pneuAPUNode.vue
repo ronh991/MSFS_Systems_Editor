@@ -23,13 +23,13 @@
                   <el-option
                     v-for="item in curveList"
                     :key="item.index"
-                    :label="item.name"
+                    :label="item.index"
                     :value="item"
                   />
                 </el-select>
             </el-form-item>
-            <el-form-item label="Out Flow" label-position="left">
-                <el-input v-model="outflow" df-outflow size="small"></el-input>
+            <el-form-item label="Output Flow" label-position="left">
+                <el-input v-model="outputflow" df-outputflow size="small"></el-input>
             </el-form-item>
             <el-form-item label="Volume" label-position="left">
                 <el-input v-model="volume" df-volume size="small"></el-input>
@@ -56,7 +56,7 @@ export default defineComponent({
         const itemname = ref('');
         const itemindex = ref('');
         const bleedcurve = ref();
-        const outflow = ref('');
+        const outputflow = ref('');
         const volume = ref('');
         const curveList = ref({});
 
@@ -77,7 +77,7 @@ export default defineComponent({
                     ...dataNode.value.data, 
                     itemname: itemname.value || '',
                     bleedcurve: bleedcurve.value || '',
-                    outflow: outflow.value || '',
+                    outputflow: outputflow.value || '',
                     volume: volume.value || '',
                 };
                 df.updateNodeDataFromId(nodeId.value, data);
@@ -118,14 +118,14 @@ export default defineComponent({
             itemindex.value = dataNode.value.data.index;
 
             bleedcurve.value = dataNode.value.data.bleedcurve;
-            outflow.value = dataNode.value.data.outflow;
+            outputflow.value = dataNode.value.data.outputflow;
             volume.value = dataNode.value.data.volume;
 
             getCurves(nodeId.value);
         });
         
         return {
-            el, itemname, itemindex, bleedcurve, outflow, volume, curveList, setBleedCurveOption,
+            el, itemname, itemindex, bleedcurve, outputflow, volume, curveList, setBleedCurveOption,
         }
 
     }    

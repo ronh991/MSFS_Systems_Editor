@@ -15,7 +15,7 @@
             <el-form-item label="Pressure" label-position="left">
                 <el-input v-model="pressure" df-pressure size="small"></el-input>
             </el-form-item>
-            <el-form-item label="Curve" label-position="left" size="small">
+            <el-form-item label="Pres Curve" label-position="left" size="small">
                 <el-select
                   v-model="curve"
                   placeholder="Select"
@@ -27,7 +27,7 @@
                   <el-option
                     v-for="item in curveList"
                     :key="item.index"
-                    :label="item.name"
+                    :label="item.index"
                     :value="item"
                   />
                 </el-select>

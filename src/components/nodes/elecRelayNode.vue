@@ -47,6 +47,7 @@
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
 import Helper from '../helper';
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -73,6 +74,13 @@ export default defineComponent({
 
         const helper = new Helper;
 
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
+
         const setmanagedLineOption = () => {
             nextTick( () => {
                 setAllParameters(nodeId.value);
@@ -90,16 +98,23 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                helper.checkmultiselected(dataNode.value.data.managedline, lineList, managedline, df, nodeId, { managedline: managedline.value, ...dataNode.value.data }, dataNode);
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    managedline: managedline.value || '',
-                    resistance: resistance.value || '',
-                    tensionthreshold: tensionthreshold.value || '',
-                    disconnectedwhenpowered: disconnectedwhenpowered.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    // not needed as line is a string????
+                    //     if (!helper.isObject(dataNode.value.data.managedline)) {
+                    //         // on import of cfg - node is just by name - need to make object
+                    //         // get node by name
+                    //         dataNode.value.data.managedline = helper.getNodebyName(dataNode.value.data.managedline, df, 'ConsumerCfg');
+                    //     }
+                    helper.checkmultiselected(dataNode.value.data.managedline, lineList, managedline, df, nodeId, { managedline: managedline.value, ...dataNode.value.data }, dataNode);
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        managedline: managedline.value || '',
+                        resistance: resistance.value || '',
+                        tensionthreshold: tensionthreshold.value || '',
+                        disconnectedwhenpowered: disconnectedwhenpowered.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }

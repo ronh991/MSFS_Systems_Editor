@@ -96,6 +96,7 @@
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
 import Helper from '../helper';
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -132,6 +133,9 @@ export default defineComponent({
 
         const helper = new Helper;
 
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+
         const supplierTypeOptions = readonly([
             'AC',
             'DC',
@@ -144,6 +148,10 @@ export default defineComponent({
             'LeadAcid',
             'LithiumIon',
         ]);
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
        
         const selectSupplierType = () => {
             nextTick( () => {
@@ -177,27 +185,37 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                helper.checkmultiselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data }, dataNode);
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    supplierCfg: supplierCfg.value || '',
-                    vrms: vrms.value || '',
-                    phase: phase.value || '',
-                    powerrating: powerrating.value || '',
-                    powerfactor: powerfactor.value || '',
-                    frequency: frequency.value || '',
-                    governedrpm: governedrpm.value || '',
-                    governedrpmratio: governedrpmratio.value || '',
-                    referencefrequency: referencefrequency.value || '',
-                    referencerpm: referencerpm.value || '',
-                    numberofpoles: numberofpoles.value || '',
-                    tensiondroprpm: tensiondroprpm.value || '',
-                    batterytype: batterytype.value || '',
-                    voltage: voltage.value || '',
-                    sType: sType.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    // if (dataNode.value.data.supplierCfg !== undefined && !helper.isObject(dataNode.value.data.supplierCfg)) {
+                    //     // on import of cfg - node is just by name - need to make object
+                    //     // get node by name
+                    //     getSuppliers(-1);
+                    //     let savename = dataNode.value.data.supplierCfg;
+                    //     dataNode.value.data.supplierCfg = [];
+                    //     dataNode.value.data.supplierCfg.push(helper.getNodebyName(savename, df, 'SupplierCfg'));
+                    // } else {
+                        helper.checkselected(dataNode.value.data.supplierCfg, supplierList, supplierCfg, df, nodeId, { supplierCfg: supplierCfg.value, ...dataNode.value.data });
+                    //}
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        supplierCfg: supplierCfg.value || '',
+                        vrms: vrms.value || '',
+                        phase: phase.value || '',
+                        powerrating: powerrating.value || '',
+                        powerfactor: powerfactor.value || '',
+                        frequency: frequency.value || '',
+                        governedrpm: governedrpm.value || '',
+                        governedrpmratio: governedrpmratio.value || '',
+                        referencefrequency: referencefrequency.value || '',
+                        referencerpm: referencerpm.value || '',
+                        numberofpoles: numberofpoles.value || '',
+                        tensiondroprpm: tensiondroprpm.value || '',
+                        batterytype: batterytype.value || '',
+                        voltage: voltage.value || '',
+                        sType: sType.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }

@@ -1,3 +1,5 @@
+import Helper from './helper';
+
 export default class Config {
 	constructor() {
     }
@@ -40,19 +42,21 @@ export default class Config {
 				case 1:
 					if (line.data.lineconnection !== undefined && line.data.lineconnection !== '') {
 						lineStr += this.writeNodeConfig({
-							'Connection': line.data.lineconnection + '(' + line.source +',' + line.destination + ')' || '',
+							'Connection': line.data.lineconnection.name + '(' + line.source +',' + line.destination + ')' || '',
 						});
 					}
-					if (line.data.connectioncomponentlist !== undefined && line.data.connectioncomponentlist !== '') {
-						let linecomponentList = line.data.connectioncomponentlist.map(obj => obj.name)
-						lineStr += this.writeNodeConfig({
-							'Connection': line.source +',' + line.destination || '',
-							'Components': linecomponentList || '',
-						});
-					} else {
-						lineStr += this.writeNodeConfig({
-							'Connection': line.source +',' + line.destination || '',
-						});
+					if(line.data.lineconnection === undefined || line.data.lineconnection === '') {
+						if ((line.data.connectioncomponentlist !== undefined && line.data.connectioncomponentlist !== '')) {
+							let linecomponentList = line.data.connectioncomponentlist.map(obj => obj.name)
+							lineStr += this.writeNodeConfig({
+								'Connection': line.source +',' + line.destination || '',
+								'Components': linecomponentList || '',
+							});
+						} else {
+							lineStr += this.writeNodeConfig({
+								'Connection': line.source +',' + line.destination || '',
+							});
+						}
 					}
 
 					break;
@@ -81,14 +85,14 @@ export default class Config {
 							// 	});
 							// }
 						}
-						if (line.data.hydraccumulatorcomponentlist !== undefined && line.data.hydraccumulatorcomponentlist !== '') {
-							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponentlist.map(obj => obj.name)
+						if (line.data.hydraccumulatorcomponent !== undefined && line.data.hydraccumulatorcomponent !== '') {
+							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponent.map(obj => obj.name)
 							lineStr += this.writeNodeConfig({
 								'Accumulator': lineaccumulatorcomponentList || '',
 							});
 						}
-						if (line.data.hydrvalvecomponentlist !== undefined && line.data.hydrvalvecomponentlist !== '') {
-							let hydrvalvecomponentList = line.data.hydrvalvecomponentlist.map(obj => obj.name)
+						if (line.data.hydrvalvecomponent !== undefined && line.data.hydrvalvecomponent !== '') {
+							let hydrvalvecomponentList = line.data.hydrvalvecomponent.map(obj => obj.name)
 							lineStr += this.writeNodeConfig({
 								'Valves': hydrvalvecomponentList || '',
 							});
@@ -116,8 +120,8 @@ export default class Config {
 							'Fan': line.data.pneufan.name || '',
 						});
 					}
-					if (line.data.pneuvalvecomponentlist !== undefined && line.data.pneuvalvecomponentlist !== '') {
-						let linevalvecomponentList = line.data.pneuvalvecomponentlist.map(obj => obj.name)
+					if (line.data.pneuvalvecomponent !== undefined && line.data.pneuvalvecomponent !== '') {
+						let linevalvecomponentList = line.data.pneuvalvecomponent.map(obj => obj.name)
 						lineStr += this.writeNodeConfig({
 							'Valves': linevalvecomponentList || '',
 						});
@@ -247,7 +251,7 @@ export default class Config {
         case 'FPump':
           nodeStr += this.writeNodeConfig({
             'Pressure': node.data.pressure || '',
-            'PressureCurve': node.data.curve || '',
+            'PressureCurve': node.data.curve.index || '',
             'TankFuelRequired': node.data.tankfuelrequired || '',
             'DestinationLine': outputLines[0],
             'Type': node.data.pumptype || '',
@@ -301,6 +305,59 @@ export default class Config {
 			break;
         case 'BValve':
           break;
+		case 'ConsumerCfg':
+			if (node.data.consumerCfg !== '' && node.data.consumerCfg !== undefined) {
+				nodeStr += this.writeNodeConfig({
+					'Type': node.data.circuittype || '',
+				});
+			}
+			else {
+				nodeStr += this.writeNodeConfig({
+					'Type': node.data.circuittype || '',
+					'CType': node.data.cType || '',
+					'Amperage': node.data.amperage || '',
+					'Voltage': node.data.voltage || '',
+					'Wattage': node.data.wattage || '',
+					'Resistance': node.data.resistance || '',
+					'ResistanceMin': node.data.resistancemin || '',
+					'ResistanceMax': node.data.resistancemax || '',
+				});
+			}
+			if (node.data.cType === "Battery") {
+				nodeStr += this.writeNodeConfig({
+					'ChargeCRate': node.data.chargecrate || '',
+					'Capacity': node.data.capacity || '',
+				});
+			}
+			break;
+		case 'SupplierCfg':
+			nodeStr += this.writeNodeConfig({
+				'SType': node.data.sType || '',
+			});
+			if (node.data.sType ==='AC') {
+				nodeStr += this.writeNodeConfig({
+					'Vrms': node.data.vrms || '',
+					'Phase': node.data.phase || '',
+					'PowerRating': node.data.powerating || '',
+					'PowerFactor': node.data.powerfactor || '',
+					'Frequency': node.data.frequency || '',
+					'GovernedRPM': node.data.governedrpm || '',
+					'GovernedRPMRatio': node.data.governedrpmratio || '',
+					'ReferenceFrequency': node.data.referencefrequency || '',
+					'ReferenceRPM': node.data.referencerpm || '',
+					'NumberOfPoles': node.data.numberofpoles || '',
+					'TensionDropRPM': node.data.tensiondroprpm || '',
+				});
+			} else if (node.data.sType ==='DC') {
+				nodeStr += this.writeNodeConfig({
+					'Voltage': node.data.voltage || '',
+				});
+			} else if (node.data.sType ==='Battery') {
+				nodeStr += this.writeNodeConfig({
+					'BatteryType': node.data.batterytype || '',
+				});
+			}
+			break;
 		case 'Circuit':
 			if (node.data.consumerCfg !== '' && node.data.consumerCfg !== undefined) {
 				nodeStr += this.writeNodeConfig({
@@ -399,6 +456,9 @@ export default class Config {
 			}
 			break;
         case 'Bus':
+			nodeStr += this.writeNodeConfig({
+				'WearAndTearCollision': node.data.wearandtear || '',
+			});
           	break;
 		case 'Generator':
 			if (node.data.supplierCfg !== '' && node.data.supplierCfg !== undefined) {
@@ -619,7 +679,7 @@ export default class Config {
 			});
 		  }
 
-		  let doorcurveList = (node.data.curverate !== undefined ? node.data.curverate.name: '');
+		  let doorcurveList = (node.data.curverate !== undefined ? node.data.curverate.index: '');
 		  if (doorcurveList !== '') {
 			nodeStr += this.writeNodeConfig({
 					'CurveRate': doorcurveList || '',
@@ -632,7 +692,7 @@ export default class Config {
 			'ContactPoint': node.data.contactpoint || '',
           });
 
-		  let scoopcurveList = (node.data.curverate !== undefined ? node.data.curverate.name: '');
+		  let scoopcurveList = (node.data.curverate !== undefined ? node.data.curverate.index: '');
 		  if (scoopcurveList !== '') {
 			nodeStr += this.writeNodeConfig({
 					'CurveRate': scoopcurveList || '',
@@ -645,7 +705,7 @@ export default class Config {
 			'Volume': node.data.volume || '',
           });
 
-		  let papucurveList = (node.data.bleedcurve !== undefined ? node.data.bleedcurve.name: '');
+		  let papucurveList = (node.data.bleedcurve !== undefined ? node.data.bleedcurve.index: '');
 		  if (papucurveList !== '') {
 			nodeStr += this.writeNodeConfig({
 					'BleedTemperatureCurve': papucurveList || '',
@@ -659,7 +719,7 @@ export default class Config {
 			'Volume': node.data.volume || '',
           });
 
-		  let penginecurveList = (node.data.bleedcurve !== undefined ? node.data.bleedcurve.name: '');
+		  let penginecurveList = (node.data.bleedcurve !== undefined ? node.data.bleedcurve.index: '');
 		  if (penginecurveList !== '') {
 			nodeStr += this.writeNodeConfig({
 					'BleedTemperatureCurve': penginecurveList || '',
@@ -781,9 +841,7 @@ export default class Config {
 			output += `${nodeStr} \n`;
 		}
 	});
-
     return output;
-
   }
 
   // IMPORT CFG
@@ -792,6 +850,12 @@ export default class Config {
   // a MSFS flight_model.cfg file or other SYSTEM section in systems.cfg
   // 
   importConfig(configStr, sysID, systemType) {
+
+	const capitalizeFirstLetter = (str) => {
+		if (!str) return ""; // Handle empty strings safely
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	};
+
   	const nodeList = [];
   	const lineList = [];
   	const linesincfg = configStr.replaceAll('\\n','\n').split('\n');
@@ -809,7 +873,7 @@ export default class Config {
 				case '[ELECTRICAL]':
 					sysID_df=1;
 					break;
-				case '[HYDRAULIC_SYSTEM_EX1]':
+				case '[HYDRAULICS_SYSTEM_EX1]':
 					sysID_df=2;
 					break;
 				case '[PNEUMATIC_SYSTEM_EX1]':
@@ -829,7 +893,7 @@ export default class Config {
 		const nodeParts = line.match(/([^\.]+)\.([^\s]+)[\s=]+(.+)$/);
 
 		if (nodeParts && nodeParts.length === 4) {
-			if (nodeParts[1] === 'Line') {
+			if (capitalizeFirstLetter(nodeParts[1].toLowerCase()) === 'Line') {
 				const parsedLine = this.parseLine(nodeParts, sysID);
 		  		if (Object.keys(parsedLine).length) {
 					lineList.push(parsedLine);
@@ -846,61 +910,92 @@ export default class Config {
     // create a sorting array with the desired order (bar) and use foo.sort((a, b) => bar.indexOf(a.name) - bar.indexOf(b.name));
     const sortOrder = [
 		[
-		'Curve',
-		'Trigger',
-		'Tank',
-		'APU',
-		'Valve',
-		'Junction',
-		'Pump',
-		'Engine',
+			'Curve',
+			'Trigger',
+			'Tank',
+			'APU',
+			'Valve',
+			'Junction',
+			'Pump',
+			'Engine',
 		],
 		[
-		'Circuit',
-		'Battery',
-		'ExternalPower',
-		'Generator',
-		'Bus',
-		'Breaker',
-		'Transformer',
-		'Diode',
-		'Relay',
-		'Connection',
+			'Consumer',
+			'Supplier',
+			'Bus',
+			'Breaker',
+			'Transformer',
+			'Diode',
+			'Relay',
+			'Connection',
+			'Circuit',
+			'Battery',
+			'ExternalPower',
+			'Generator',
 		],
 		[
-		'Reservior',
-		'HPump',
-		'Accumulator',
-		'Actuator',
-		'PTU',
-		'HJunction',
-		'HTrigger',
-		'HValve',
-		'HCombiner',
-		'HSeparator',
+			'Accumulator',
+			'Valve',
+			'Reservoir',
+			'Pump',
+			'Actuator',
+			'PTU',
+			'Junction',
+			'Trigger',
+			'Combiner',
+			'Separator',
+		],
+		[
+			'Curve',
+			'Parameters',
+			'Valve',
+			'Fan',
+			'APU',
+			'Area',
+			'Pack',
+			'Engine',
+			'RamAir',
+			'MixerUnit',
+			'Outlet',
+			'Junction',
+		],
+		[
+			'Curve',
+			'Tank',
+			'Door',
+			'Scoop',
 		]
+
 	];
     const sortedNodeList = nodeList.sort((a, b) => sortOrder[sysID].indexOf(a.name) - sortOrder[sysID].indexOf(b.name));
 
   	const graph = this.processNodes(sortedNodeList, lineList, sysID);
   	// return lineStrings;
-  	return graph;
+  	return [graph, lineList];
   }
 
   parseNode(nodeParts, sysID) {
-	const nodeTypeStr = nodeParts[1];  	
-	const nodeIndex = nodeParts[2];
+
+	const capitalizeFirstLetter = (str) => {
+		if (!str) return ""; // Handle empty strings safely
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	};
+
+	const nodeTypeStr = (nodeParts[1].toUpperCase() !== "APU" && nodeParts[1].toUpperCase() !== "PTU") ? ((nodeParts[1] !== "RamAir" && nodeParts[1] !== "MixerUnit") ? capitalizeFirstLetter(nodeParts[1].toLowerCase()) : nodeParts[1]) : nodeParts[1].toUpperCase();  	
+	const nodeIndex = parseInt(nodeParts[2], 10); ;
 	const nodeParams = nodeParts[3].split('#');
   	const node = {};
 	node.data = { index: nodeIndex, name: `${nodeTypeStr}.${nodeIndex}` };
 	node.name = nodeTypeStr;
 	const nodeProperties = this.getNodeProperties(nodeTypeStr, sysID);
 	if (nodeProperties) {
+		// class and html are not name
+		node.class = nodeProperties['Class'];
 		const propKeys = Object.keys(nodeProperties);
   		nodeParams.forEach( (p) => {
   			const param = p.match(/([^:]+):(.+)/);
   			const propKey = propKeys.indexOf(param[1].trim());
-        const propName = propKeys[propKey]
+        	const propName = propKeys[propKey]
   			if (propName) {
   				if (node.data[nodeProperties[propName]]) {
   					// append to existing property with ':' delimiter (Option can have multiple entries)
@@ -910,7 +1005,7 @@ export default class Config {
   				}
   			}
   			// special handling for curve node
-  			if (!propKeys.length) {
+  			if (propKeys.length < 3 && node.class ==="Curve") {
 		        const paramOnly = p.replace(/[^0-9.,-:]+/g, '').trim();
   				node.data.params = paramOnly;
   			}
@@ -918,8 +1013,10 @@ export default class Config {
   	}
   	return node;
   }
-
+ 
   parseLine(lineParts, sysID) {
+
+    const helper = new Helper;
   	const lineParams = lineParts[3].split('#');
   	const line = {};
   	const lineProperties = this.getNodeProperties('Line', sysID);
@@ -932,14 +1029,20 @@ export default class Config {
 			line[lineProperties[propName]] = param[1].trim();
 		}
 	});
+	line['SysID'] = sysID;
 	return line;
   }
 
   // after parsing nodes and lines, assemble into drawflow JSON
   processNodes(nodes, lines, sysID) {
+	const helper = new Helper;
   	// each node will be placed with this offset from the previous
   	const offset_x = 260;
   	const offset_y = 50;
+
+	var maxNodei = 0;
+	var combinerIndex = 1;
+	var separatorIndex = 1;
 
   	const graph = {
   		'drawflow': {
@@ -961,82 +1064,398 @@ export default class Config {
 			'Engine',
 		],
 		[
-
+			'Connection',
+			'Consumer',
+			'Supplier',
+			'Bus',
+			'Breaker',
+			'Transformer',
+			'Diode',
+			'Relay',
+			'Circuit',
+			'Battery',
+			'ExternalPower',
+			'Generator',
+		],
+		[
+			'Reservoir',
+			'Pump',
+			'Accumulator',
+			'Actuator',
+			'PTU',
+			'Junction',
+			'Trigger',
+			'Valve',
+			'Combiner',
+			'Separator',
+		],
+		[
+			'APU',
+			'Engine',
+			'RamAir',
+			'Pack',
+			'MixerUnit',
+			'Area',
+			'Outlet',
+			'Valve',
+			'Fan',
+			'Junction',
+			'Curve',
+			'Parameters',
+		],
+		[
+			'Curve',
+			'Tank',
+			'Door',
+			'Scoop',
 		]
 	];
 	// get system id first
 	// sysID = 
   	// add node to the drawflow node graph
 	// html has to match the registered editor node name
+	let countx = 0;
+	let county = 0;
+	let prev_class = '';
+	let count_parameters = 0;
   	for (const [i, node] of nodes.entries()) {
       if (allowedNodes[sysID].includes(node.name)) {
+			if (node.class !== prev_class || countx > 10){
+				county = county + 3 - countx;
+				countx = 0;
+				prev_class = node.class;
+			}
+			countx++;
+			county++;
+
     		graph.drawflow.Home.data[i] = {
     			"id": i,
     			"name": node.name,
     			"data": node.data,
-         		"class": node.name, /* naming things here */
-            	"html": node.name,
+         		"class": node.class, /* naming things here */
+            	"html": node.class,
             	"typenode": "vue",
             	"inputs": {},
             	"outputs": {},
-            	"pos_x": i * offset_x,
-            	"pos_y": i * offset_y,
+            	"pos_x": countx * offset_x,
+            	"pos_y": county * offset_y,
     		}
-      }
+      } else {
+		// test to see if parameters for Pneumatics
+		// 
+		if (sysID === 3) {
+			//pneumatics
+			if (count_parameters > 4) {
+				graph.drawflow.Home.data[i] = {
+					"id": i,
+					"name": 'Parameters.1',
+					"data": node.data,
+					"class": 'Parameters', /* naming things here */
+					"html": 'Parameters',
+					"typenode": "vue",
+					"inputs": {},
+					"outputs": {},
+					"pos_x": countx * offset_x,
+					"pos_y": county * offset_y,
+				}
+			}
+			//count_parameters++;
+		}
+	  }
+	  // to add HCombiner/HSeparator nodes later
+	  maxNodei = i + 1;
 	}
 	// loop through the lines and set the input/outputs on the nodes
 	lines.forEach( line => {
-		if (line.source) {
-			const graphNodes = Object.values(graph.drawflow.Home.data);
-			const sourceNode = graphNodes.find( n => n.data.itemname === line.source);
-			const destinationNode = graphNodes.find( n => n.data.itemname === line.destination);
-			const gSource = graph.drawflow.Home.data[sourceNode.id];
-			const gDest = graph.drawflow.Home.data[destinationNode.id];			
-			const sOutputKey = `output_${Object.keys(gSource.outputs).length + 1}`;
-			const dInputKey = `input_${Object.keys(gDest.inputs).length + 1}`;
-			gSource.outputs[sOutputKey] = {
-				"connections": [
-					{
-						"node": destinationNode.id,
-						"output": dInputKey,
-					}
-				]
-			};
-			gDest.inputs[dInputKey] = {
-				"connections": [
-					{
-						"node": sourceNode.id,
-						"input": sOutputKey,
-					}
-				]
-			};			
-		}
-	});
+		
+		switch (sysID) {
+			case 0:
+				if (line.source) {
+					const splitToArr = (str, delim = ',') => {
+						return str.split(delim).map(i => i.trim());
+					};
 
-	// adjust some of the data properties
-  	// convert array types
-	const splitToArr = (str, delim = ',') => {
-		return str.split(delim).map(i => i.trim());
-	};
-		for (const [i, node] of nodes.entries()) {
-			if (node.data.optionlist) {
-				const options = node.data.optionlist.split(':');
-				const final = [];
-				options.forEach( o => {
-					final.push(o.split(','))
-				})
-				node.data.optionlist = final;
+					helper.setgraphData(graph, line.source, line.destination);
+				}
+				// adjust some of the data properties
+				// convert array types
+				
+				for (const [i, node] of nodes.entries()) {
+					if (node.data.optionlist) {
+						const options = node.data.optionlist.split(':');
+						const final = [];
+						options.forEach( o => {
+							final.push(o.split(','))
+						})
+						node.data.optionlist = final;
+					}
+					if (node.data.inputonlylines) {
+						node.data.inputonlylines = splitToArr(node.data.inputonlylines);
+					}
+					if (node.data.outputonlylines) {
+						node.data.outputonlylines = splitToArr(node.data.outputonlylines);
+					}    
+					if (node.data.oneway) {
+						node.data.oneway = true;
+					}
+					if (node.data.curve) {
+						if (!helper.isObject(node.data.curve)) {
+							let savename = node.data.curve;
+							node.data.curve = [];
+							node.data.curve.push(helper.getNodebyName(savename, graph, 'Curve'));
+						}
+					}
+				}
+				break;
+			case 1:
+				if (line.lineconnection) {
+
+					const graphNodes = Object.values(graph.drawflow.Home.data);
+
+					if (line.lineconnection.includes('(')) {
+						const concompArray = line.lineconnection.split('(').map(row => row.split(','));
+						const conName = concompArray[0];
+						// lines seem to be trickey
+						// an object not array
+						// means the single object is displayed - uses index, not nodeid
+						line.lineconnection = (helper.getNodebyName(conName[0], graph, 'Connection'));
+
+						if (line.connectioncomponentlist) {
+							let savecomponents = line.connectioncomponentlist;
+							linecompOptions.forEach((classname) => {
+								savecomponents.forEach((lc) => {
+									let linecomp = helper.getNodebyName(lc, graph, classname);
+									if (!helper.isObjectEmpty(linecomp)) {
+										line.connectioncomponentlist.push(linecomp);
+									}
+								});
+							});
+						}
+						
+						// make a function
+						helper.setgraphData(graph, conArray[0], conArray[1]);
+					} else if (line.lineconnection.includes(',')) {
+						//const conName = conArray[0];
+						line.lineconnection = [];
+						if (line.connectioncomponentlist) {
+							let savecomponents = line.connectioncomponentlist;
+							linecompOptions.forEach((classname) => {
+								savecomponents.forEach((lc) => {
+									let linecomp = helper.getNodebyName(lc, graph, classname);
+									if (!helper.isObjectEmpty(linecomp)) {
+										line.connectioncomponentlist.push(linecomp);
+									}
+								});
+							});
+						}
+						
+						const conArray = line.lineconnection.split(',');
+						helper.setgraphData(graph, conArray[0], conArray[1]);
+					}
+				}
+
+				// adjust node properties node updates
+				// array and object arrays
+				// on import of cfg - node is just by name - need to make object
+				// get node by name
+				
+				const linecompOptions = ([
+					'Breaker',
+					'Transformer',
+					'Diode',
+				]);
+
+				for (const [i, node] of nodes.entries()) {
+					if (node.data.consumerCfg) {
+						if (!helper.isObject(node.data.consumerCfg)) {
+							let savename = node.data.consumerCfg;
+							node.data.consumerCfg = [];
+							node.data.consumerCfg.push(helper.getNodebyName(savename, graph, 'ConsumerCfg'));
+						}
+					}
+					if (node.data.supplierCfg) {
+						if (!helper.isObject(node.data.supplierCfg)) {
+							let savename = node.data.supplierCfg;
+							node.data.supplierCfg = [];
+							node.data.supplierCfg.push(helper.getNodebyName(savename, graph, 'SupplierCfg'));
+						}
+					}
+					if (node.data.linecomponent) {
+							
+						if (!helper.isObject(node.data.linecomponent)) {
+							let savename = node.data.linecomponent;
+							//savename can be a list comma separated.
+							const linecompArray = savename.split(',');
+
+							node.data.linecomponent = [];
+							//linecomponent.value = [];
+							linecompOptions.forEach((classname) => {
+								linecompArray.forEach((lc) => {
+									let linecomp = helper.getNodebyName(lc, graph, classname);
+									if (!helper.isObjectEmpty(linecomp)) {
+										node.data.linecomponent.push(linecomp);
+										//linecomponent.value.push(linecomp);
+									}
+								});
+							});
+						}
+					}
+				}
+				break;
+			case 2:
+				if (line.lineinputs || line.lineoutputs) {
+
+					// lines seem to be trickey
+					// an object not array
+					// means the single object is displayed - uses index, not nodeid
+
+					// check multi input/output
+
+					if(line.lineinputs.includes(',') || line.lineoutputs.includes(',')) {
+						// first make Combiner/Separator grouping
+						// split line name for Combiner/Separator names
+                		const combinerseparatornames = line.itemname.split("To");
+						// need to add HCombiner node
+						county = county + 3 - countx + 3;
+						countx = 1;
+						graph.drawflow.Home.data[maxNodei] = {
+							"id": maxNodei,
+							"name": combinerseparatornames[0],
+							"data": {itemname: combinerseparatornames[0], index: combinerIndex},
+							"class": 'HCombiner', /* naming things here */
+							"html": 'HCombiner',
+							"typenode": "vue",
+							"inputs": {},
+							"outputs": {},
+							"pos_x": countx * offset_x,
+							"pos_y": county * offset_y,
+						}
+							//"outputs": {"output_1": {"connections": [{"node": maxNodei + 1, "input": input_1}]}},
+						maxNodei++;
+						countx = 4;
+						county = county + 2;
+						graph.drawflow.Home.data[maxNodei] = {
+							"id": maxNodei,
+							"name": combinerseparatornames[1],
+							"data": {itemname: combinerseparatornames[1], index: separatorIndex},
+							"class": 'HSeparator', /* naming things here */
+							"html": 'HSeparator',
+							"typenode": "vue",
+							"inputs": {},
+							"outputs": {},
+							"pos_x": countx * offset_x,
+							"pos_y": county * offset_y,
+						}
+							//"inputs": {"input_1" : {"connections": [{"node": maxNodei, "output": output_1}]}},
+
+						maxNodei++
+						combinerIndex++;
+						separatorIndex++;
+
+						// makes connection between Combiner/Separator
+						helper.setgraphData(graph, combinerseparatornames[0], combinerseparatornames[1]);
+
+						// need to loop combiner inputs and separator outputs
+
+						line.lineinputs.split(',').forEach((li) => {
+							let saveinputs = line.lineinputs;
+							// the PTU dot issue too
+							helper.setgraphData(graph, li.trim(), combinerseparatornames[0]);
+						});
+
+						line.lineoutputs.split(',').forEach((lo) => {
+							let saveoutputs = line.lineoutputs;
+							// the PTU dot issue too
+							helper.setgraphData(graph, combinerseparatornames[1], lo.trim());
+						});
+
+					} else {
+						// non multi inputs/outputs
+						helper.setgraphData(graph, line.lineinputs, line.lineoutputs);
+					}
+
+					if (line.hydraccumulatorcomponent) {
+						let savecomponents = line.hydraccumulatorcomponent;
+						line.hydraccumulatorcomponent = (helper.getNodebyName(savecomponents, graph, 'Accumulator'));
+
+					}
+
+					if (line.hydrvalvecomponent) {
+						let savename = line.hydrvalvecomponent;
+						//savename can be a list comma separated.
+						const linevalveArray = savename.split(',');
+
+						line.hydrvalvecomponent = [];
+						linevalveArray.forEach((lv) => {
+							let linecomp = helper.getNodebyName(lv, graph, 'HValve');
+							if (!helper.isObjectEmpty(linecomp)) {
+								line.hydrvalvecomponent.push(linecomp);
+							}
+						});
+					}
+					
+					for (const [i, node] of nodes.entries()) {
+						if (node.data.mastercylinder) {
+							node.data.mastercylinder = true;
+						}
+					}
+				}
+				break;
+			case 3:
+				if (line.linesource || line.linedest) {
+					const splitToArr = (str, delim = ',') => {
+						return str.split(delim).map(i => i.trim());
+					};
+
+					helper.setgraphData(graph, line.linesource, line.linedest);
+					
+					for (const [i, node] of nodes.entries()) {
+						if (node.data.bleedcurve) {
+							if (!helper.isObject(node.data.bleedcurve)) {
+								let savename = node.data.bleedcurve;
+								node.data.bleedcurve = [];
+								node.data.bleedcurve.push(helper.getNodebyName(savename, graph, 'Curve'));
+							}
+						}
+					}
+
+					if (line.pneuvalvecomponent) {
+						let savename = line.pneuvalvecomponent;
+						//savename can be a list comma separated.
+						const linevalveArray = savename.split(',');
+
+						line.pneuvalvecomponent = [];
+						linevalveArray.forEach((lv) => {
+							let linecomp = helper.getNodebyName(lv, graph, 'PValve');
+							if (!helper.isObjectEmpty(linecomp)) {
+								line.pneuvalvecomponent.push(linecomp);
+							}
+						});
+					}
+
+					if (line.pneufancomponent) {
+						let savename = line.pneufancomponent;
+						//savename can be a list comma separated.
+						const linefanArray = savename.split(',');
+
+						line.pneufancomponent = [];
+						linefanArray.forEach((lv) => {
+							let linecomp = helper.getNodebyName(lv, graph, 'Fan');
+							if (!helper.isObjectEmpty(linecomp)) {
+								line.pneufancomponent.push(linecomp);
+							}
+						});
+					}
+				}
+				break;
+			case 4:
+				// no lines for Liquid
+				break;
+
 			}
-		if (node.data.inputonlylines) {
-		node.data.inputonlylines = splitToArr(node.data.inputonlylines);
-		}
-		if (node.data.outputonlylines) {
-		node.data.outputonlylines = splitToArr(node.data.outputonlylines);
-		}    
-			if (node.data.oneway) {
-				node.data.oneway = true;
-			}
-		}
+		
+		});
+
 		return graph;
 	}
 
@@ -1045,215 +1464,532 @@ export default class Config {
   	and the value matches the drawflow node data property
 	*/
 	getNodeProperties(nodeTypeStr, sysID) {
-		switch (nodeTypeStr) {
-			case 'Curve':
-				return {}
-			case 'FEngine':
-				return {
-					'Name': 'itemname',
-					'Index': 'engineindex',
+		switch (sysID) {
+			case 0:
+				switch (nodeTypeStr) {
+					case 'Curve':
+						return {
+							'Params': 'params',
+							'Class': 'Curve',
+						}
+					case 'Engine':
+						return {
+							'Name': 'itemname',
+							'Index': 'engineindex',
+							'Class': 'Engine',
+						}
+					case 'Tank':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'Capacity': 'capacity',
+							'UnusableCapacity': 'unusuablecapacity',
+							'Position': 'position',
+							'DropTimer': 'droptimer',
+							'Priority': 'priority',
+							'OutputOnlyLines': 'outputonlylines',
+							'Class': 'Tank',
+						}
+					case 'Pump':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'Pressure': 'pressure',
+							'PressureCurve': 'curve',
+							'TankFuelRequired': 'tankfuelrequired',
+							'Type': 'pumptype',
+							'Index': 'droptimer',
+							'AutoCondition': 'autocondition',
+							'PressureDecreaseRate': 'pressuredecrease',
+							'DestinationLine': 'oneway',
+							'Class': 'Pump',
+						}
+					case 'Junction':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'Option': 'optionlist',
+							'InputOnlyLines': 'inputonlylines',
+							'OutputOnlyLines': 'outputonlylines',
+							'Class': 'Junction',
+						}
+					case 'Valve':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'DestinationLine': 'oneway',
+							'OpeningTime': 'openingtime',
+							'Circuit': 'circuitindex',
+							'Class': 'Valve',
+						}
+					case 'APU':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'FuelBurnRate': 'fuelburn',
+							'Class': 'APU',
+						}
+					case 'Line':
+						return {
+							'Name': 'itemname',
+							'Source': 'source',
+							'Destination': 'destination',
+							'FuelFlowAt1PSI': 'fuelflow',
+							'Volume': 'volume',
+							'GravityBasedFuelFlow': 'gravityflow',
+							'Class': 'Line',
+						}
+					case 'Trigger':
+						return {
+							'Name': 'itemname',
+							'Title': 'itemtitle',
+							'Target': 'target',
+							'Threshold': 'threshold',
+							'Index': 'targetindex',
+							'DelayTrue': 'delaytrue',
+							'DelayFalse': 'delayfalse',
+							'Condition': 'condition',
+							'EffectTrue': 'effecttrue',
+							'EffectFalse': 'effectfalse',
+							'iParam': 'iparam',
+							'Class': 'Trigger',
+						}
+					case 'Burner':
+						return {
+							'Name': 'itemname',
+							'PilotLightFlowRate': 'pilotlightflowrate',
+							'Class': 'Burner',
+						}
+					case 'BValve':
+						return {
+							'Name': 'itemname',
+							'Burner': 'burner',
+							'MaxFlowRate': 'maxflowrate',
+							'Power': 'power',
+							'Class': 'BValve',
+						}
 				}
-			case 'FTank':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'Capacity': 'capacity',
-					'UnusableCapacity': 'unusuablecapacity',
-					'Position': 'position',
-					'DropTimer': 'droptimer',
-					'Priority': 'priority',
-					'OutputOnlyLines': 'outputonlylines',
+				break;
+			case 1:
+				switch (nodeTypeStr) {
+					case 'Circuit':
+						return {
+							'Name': 'itemname',
+							'ConsumerCfg': 'consumerCfg',
+							'Type': 'circuittype',
+							'Type': 'circuittype',
+							'CType': 'cType',
+							'Amperage': 'amperage',
+							'Voltage': 'voltage',
+							'Wattage': 'wattage',
+							'Resistance': 'resistance',
+							'ResistanceMin': 'resistancemin',
+							'ResistanceMax': 'resistancemax',
+							'ChargeCRate': 'chargecrate',
+							'Capacity': 'capacity',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Circuit',
+						}
+					case 'Battery':
+						return {
+							'Name': 'itemname',
+							'ConsumerCfg': 'consumerCfg',
+							'CType': 'cType',
+							'Amperage': 'amperage',
+							'Voltage': 'voltage',
+							'Wattage': 'wattage',
+							'Resistance': 'resistance',
+							'ResistanceMin': 'resistancemin',
+							'ResistanceMax': 'resistancemax',
+							'ChargeCRate': 'chargecrate',
+							'Capacity': 'capacity',
+							'SupplierCfg': 'supplierCfg',
+							'SType': 'sType',
+							'BatteryType': 'batterytype',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Battery',
+						}
+					case 'ExternalPower':
+						// supplierCFG has name. need to use nodeid in push to drawflow
+						return {
+							'Name': 'itemname',
+							'SupplierCfg': 'supplierCfg',
+							'SType': 'sType',
+							'Vrms': 'vrms',
+							'Phase': 'phase',
+							'PowerRating': 'powerating',
+							'PowerFactor': 'powerfactor',
+							'Frequency': 'frequency',
+							'GovernedRPM': 'governedrpm',
+							'GovernedRPMRatio': 'governedrpmratio',
+							'ReferenceFrequency': 'referencefrequency',
+							'ReferenceRPM': 'referencerpm',
+							'NumberOfPoles': 'numberofpoles',
+							'TensionDropRPM': 'tensiondroprpm',
+							'Voltage': 'voltage',
+							'BatteryType': 'batterytype',
+							'Class': 'ExternalPower',
+						}
+					case 'Generator':
+						return {
+							'Name': 'itemname',
+							'SupplierCfg': 'supplierCfg',
+							'SType': 'sType',
+							'Vrms': 'vrms',
+							'Phase': 'phase',
+							'PowerRating': 'powerating',
+							'PowerFactor': 'powerfactor',
+							'Frequency': 'frequency',
+							'GovernedRPM': 'governedrpm',
+							'GovernedRPMRatio': 'governedrpmratio',
+							'ReferenceFrequency': 'referencefrequency',
+							'ReferenceRPM': 'referencerpm',
+							'NumberOfPoles': 'numberofpoles',
+							'TensionDropRPM': 'tensiondroprpm',
+							'Voltage': 'voltage',
+							'BatteryType': 'batterytype',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Generator',
+						}
+					case 'Bus':
+						return {
+							'Name': 'itemname',
+							'Class': 'Bus',
+						}
+					case 'Relay':
+						// managed line name
+						return {
+							'Name': 'itemname',
+							'ManagedLine': 'managedline',
+							'Resistance': 'resistance',
+							'TensionThreshold': 'tensionthreshold',
+							'DisconnectWhenPowered': 'disconnectedwhenpowered',
+							'Class': 'Relay',
+						}
+					case 'Breaker':
+						return {
+							'Name': 'itemname',
+							'RatedCurrent': 'ratedcurrent',
+							'TripCurveType': 'tripcurvetype',
+							'Class': 'Breaker',
+						}
+					case 'Transformer':
+						return {
+							'Name': 'itemname',
+							'TargetVoltage': 'targetvoltage',
+							'Class': 'Transformer',
+						}
+					case 'Diode':
+						return {
+							'Name': 'itemname',
+							'ForwardVoltage': 'forwardvoltage',
+							'ReverseVoltage': 'reversevoltage',
+							'Class': 'Diode',
+						}
+					case 'Connection':
+						// component list is array so need to find the right components using node name to id
+						return {
+							'Name': 'itemname',
+							'Components': 'linecomponent',
+							'Class': 'Connection',
+						}
+					case 'Consumer':
+						return {
+							'Name': 'itemname',
+							'Type': 'circuittype',
+							'CType': 'cType',
+							'Amperage': 'amperage',
+							'Voltage': 'voltage',
+							'Wattage': 'wattage',
+							'Resistance': 'resistance',
+							'ResistanceMin': 'resistancemin',
+							'ResistanceMax': 'resistancemax',
+							'ChargeCRate': 'chargecrate',
+							'Capacity': 'capacity',
+							'Class': 'ConsumerCfg',
+						}
+					case 'Supplier':
+						return {
+							'Name': 'itemname',
+							'SType': 'sType',
+							'Vrms': 'vrms',
+							'Phase': 'phase',
+							'PowerRating': 'powerating',
+							'PowerFactor': 'powerfactor',
+							'Frequency': 'frequency',
+							'GovernedRPM': 'governedrpm',
+							'GovernedRPMRatio': 'governedrpmratio',
+							'ReferenceFrequency': 'referencefrequency',
+							'ReferenceRPM': 'referencerpm',
+							'NumberOfPoles': 'numberofpoles',
+							'TensionDropRPM': 'tensiondroprpm',
+							'Voltage': 'voltage',
+							'BatteryType': 'batterytype',
+							'Class': 'SupplierCfg',
+						}
+					case 'Curve':
+						return {
+							'Params': 'params',
+							'Class': 'Curve',
+						}
+					case 'Line':
+						return {
+							'Name': 'itemname',
+							'Connection': 'lineconnection',
+							'WearAndTearCollision': 'eleclinewearandtear',
+							'Components': 'connectioncomponentlist',
+							'SysID': 'sysID',
+						}
+					}
+					break;
+			case 2:
+				switch (nodeTypeStr) {
+					case 'Reservoir':
+						return {
+							'Name': 'itemname',
+							'MaxCapacity': 'maxcapacity',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Reservoir',
+						}
+					case 'Pump':
+						return {
+							'Name': 'itemname',
+							'Type': 'pumptype',
+							'NormalPressure': 'normalpressure',
+							'NominalDisplacement': 'nominaldisplacement',
+							'LiquidCapacity': 'liquidcapacity',
+							'Index': 'engineindex',
+							'Circuit': 'circuitname',
+							'CircuitIndex': 'circuitindex',
+							'Mode': 'modetype',
+							'PressureThresholdPct': 'pressurethresholdpct',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'HPump',
+						}
+					case 'PTU':
+						return {
+							'Name': 'itemname',
+							'NormalPressure': 'normalpressure',
+							'NominalDisplacement': 'nominaldisplacement',
+							'Reversible': 'reversible',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'PTU',
+						}
+					case 'Actuator':
+						return {
+							'Name': 'itemname',
+							'FluidVolume': 'fluidvolume',
+							'LiquidCapacity': 'liquidcapacity',
+							'LiquidConsumption': 'liquidconsumption',
+							'MinimalPressure': 'minimalpressure',
+							'Type': 'actuatortype',
+							'MasterCylinder': 'mastercylinder',
+							'Redundancy': 'redundancy',
+							'AssistancePct': 'assistancepct',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Actuator',
+						}
+					case 'Junction':
+						return {
+							'Name': 'itemname',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'HJunction',
+						}
+					case 'Accumulator':
+						return {
+							'Name': 'itemname',
+							'NormalPressure': 'normalpressure',
+							'InitialPressure': 'initialpressure',
+							'Capacity': 'capacity',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'Accumulator',
+						}
+					case 'Trigger':
+						return {
+							'Name': 'itemname',
+							'Condition': 'condition',
+							'Effects' : 'effects',
+							'Class': 'HTrigger',
+						}
+					case 'Valve':
+						return {
+							'Name': 'itemname',
+							'Type': 'valvetype',
+							'PressureThreshold': 'valvetype',
+							'Circuit': 'circuitname',
+							'CircuitIndex': 'circuitindex',
+							'RestPosition': 'rstposition',
+							'WearAndTearCollision': 'wearandtear',
+							'Class': 'HValve',
+						}
+					case 'Line':
+						return {
+							'Name': 'itemname',
+							'Inputs': 'lineinputs',
+							'Outputs': 'lineoutputs',
+							'Accumulator': 'hydraccumulatorcomponent',
+							'Valves': 'hydrvalvecomponent',
+							'NonReturn': 'hydrlinenonreturn',
+							'WearAndTearCollision': 'hydrlinewearandtear',
+							'Class': 'Line',
+						}
 				}
-			case 'FPump':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'Pressure': 'pressure',
-					'PressureCurve': 'curve',
-					'TankFuelRequired': 'tankfuelrequired',
-					'Type': 'pumptype',
-					'Index': 'droptimer',
-					'AutoCondition': 'autocondition',
-					'PressureDecreaseRate': 'pressuredecrease',
-					'DestinationLine': 'oneway',
-				}
-			case 'FJunction':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'Option': 'optionlist',
-					'InputOnlyLines': 'inputonlylines',
-					'OutputOnlyLines': 'outputonlylines',
-				}
-			case 'FValve':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'DestinationLine': 'oneway',
-					'OpeningTime': 'openingtime',
-					'Circuit': 'circuitindex',
-				}
-			case 'FAPU':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'FuelBurnRate': 'fuelburn',
-				}
-			case 'Line':
-				return {
-					'Name': 'itemname',
-					'Source': 'source',
-					'Destination': 'destination',
-					'FuelFlowAt1PSI': 'fuelflow',
-					'Volume': 'volume',
-					'GravityBasedFuelFlow': 'gravityflow',
-				}
-			case 'FTrigger':
-				return {
-					'Name': 'itemname',
-					'Title': 'itemtitle',
-					'Target': 'target',
-					'Threshold': 'threshold',
-					'Index': 'targetindex',
-					'DelayTrue': 'delaytrue',
-					'DelayFalse': 'delayfalse',
-					'Condition': 'condition',
-					'EffectTrue': 'effecttrue',
-					'EffectFalse': 'effectfalse',
-					'iParam': 'iparam',
-				}
-			case 'Burner':
-				return {
-					'Name': 'itemname',
-					'PilotLightFlowRate': 'pilotlightflowrate',
-				}
-			case 'BValve':
-				return {
-					'Name': 'itemname',
-					'Burner': 'burner',
-					'MaxFlowRate': 'maxflowrate',
-					'Power': 'power',
-				}
-			case 'Circuit':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Battery':
-				return {
-					'Name': 'itemname',
-				}
-			case 'ExternalPower':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Generator':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Bus':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Relay':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Breaker':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Transformer':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Diode':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Connection':
-				return {
-					'Name': 'itemname',
-				}
-			case 'ConsumerCfg':
-				return {
-					'Name': 'itemname',
-				}
-			case 'SupplierCfg':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Reservoir':
-				return {
-					'Name': 'itemname',
-				}
-			case 'HPump':
-				return {
-					'Name': 'itemname',
-				}
-			case 'PTU':
-				return {
-					'Name': 'itemname',
-				}
-			case 'HJunction':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Actuator':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Accumulator':
-				return {
-					'Name': 'itemname',
-				}
-			case 'HTrigger':
-				return {
-					'Name': 'itemname',
-				}
-			case 'HValve':
-				return {
-					'Name': 'itemname',
-				}
-			case 'PAPU':
-				return {
-					'Name': 'itemname',
-				}
-			case 'PEngine':
-				return {
-					'Name': 'itemname',
-				}
-			case 'RamAir':
-				return {
-					'Name': 'itemname',
-				}
-			case 'MixerUnit':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Area':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Pack':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Outlet':
-				return {
-					'Name': 'itemname',
-				}
-			case 'PValve':
-				return {
-					'Name': 'itemname',
-				}
-			case 'Fan':
-				return {
-					'Name': 'itemname',
-				}
-			case 'PJunction':
-				return {
-					'Name': 'itemname',
-				}
+				break;
+			case 3:
+				switch (nodeTypeStr) {
+					case 'APU':
+						return {
+							'Name': 'itemname',
+							'BleedTemperaturesCurve': 'bleedtemperaturescurve',
+							'OutputFlow': 'outputflow',
+							'Class': 'PAPU',
+						}
+					case 'Engine':
+						return {
+							'Name': 'itemname',
+							'Index': 'engineindex',
+							'BleedTemperaturesCurve': 'bleedtemperaturescurve',
+							'OutputFlow': 'outputflow',
+							'Volume': 'volume',
+							'Class': 'PEngine',
+						}
+					case 'RamAir':
+						return {
+							'Name': 'itemname',
+							'Surface': 'surface',
+							'Volume': 'volume',
+							'Class': 'RamAir',
+						}
+					case 'MixerUnit':
+						return {
+							'Name': 'itemname',
+							'Volume': 'volume',
+							'Class': 'MixerUnit',
+						}
+					case 'Area':
+						return {
+							'Name': 'itemname',
+							'Volume': 'volume',
+							'Bleed': 'bleed',
+							'AmbientBleedStaticFlow': 'ambientbleedstaticflow',
+							'OpeningIndices': 'openingindices',
+							'PID': 'packpid',
+							'Class': 'Area',
+						}
+					case 'Pack':
+						return {
+							'Name': 'itemname',
+							'Circuit': 'circuit',
+							'TypicalFlow': 'typicalflow',
+							'Volume': 'volume',
+							'MinTemperatureOutput': 'mintempout',
+							'DefaultTemperatureOutput': 'deftempout',
+							'PackFlowLow': 'packflowlow',
+							'PackFlowNorm': 'packflownorm',
+							'PackFlowHigh': 'packflowhigh',
+							'ManagedAreas': 'managedareas',
+							'Class': 'Pack',
+						}
+					case 'Outlet':
+						return {
+							'Name': 'itemname',
+							'Type': 'outlettype',
+							'ConsumptionVolume': 'consuptionvolume',
+							'ConsumptionPressure': 'consumptionpressure',
+							'ConsumptionTemperature': 'consumptiontemperature',
+							'Index': 'starterindex',
+							'Volume': 'volume',
+							'Class': 'Outlet',
+						}
+					case 'Valve':
+						return {
+							'Name': 'itemname',
+							'Circuit': 'circuit',
+							'ManagedAreas': 'managedareas',
+							'OpeningTime': 'openingtime',
+							'Type': 'valvetype',
+							'PID': 'valvepid',
+							'Class': 'PValve',
+						}
+					case 'Fan':
+						return {
+							'Name': 'itemname',
+							'Circuit': 'circuit',
+							'SpeedUpTime': 'speeduptime',
+							'StaticPressure': 'staticpressure',
+							'MaxFlow': 'maxflow',
+							'Class': 'Fan',
+						}
+					case 'Junction':
+						return {
+							'Name': 'itemname',
+							'InputOnlyLines': 'inputonlylines',
+							'OutputOnlyLines': 'outputonlylines',
+							'Volume': 'volume',
+							'Class': 'PJunction',
+						}
+					case 'Curve':
+						return {
+							'Params': 'params',
+							'Class': 'Curve',
+						}
+					case 'Parameters':
+						return {
+							'Name': 'itemname',
+							'Class': 'Parameters',
+						}
+					case 'Line':
+						return {
+							'Name': 'itemname',
+							'Source': 'linesource',
+							'Destination': 'linedest',
+							'MaxFlow': 'pneumaxflow',
+							'Valves': 'pneuvalvecomponent',
+							'Fan': 'pneufan',
+							'Volume': 'pneuvolume',
+							'Class': 'Line',
+						}
+			}
+			break;
+			case 4:
+				switch (nodeTypeStr) {
+					case 'Curve':
+						return {
+							'Params': 'params',
+							'Class': 'Curve',
+						}
+					case 'Tank':
+						return {
+							'Name': 'itemname',
+							'Position': 'position',
+							'Capacity': 'capacity',
+							'Doors': 'doors',
+							'Scoops': 'scoops',
+							'Class': 'LTank',
+						}
+					case 'Door':
+						return {
+							'Name': 'itemname',
+							'FixedRate': 'fixedrate',
+							'CurveRate': 'curverate',
+							'Dropspeed': 'dropspeed',
+							'Circuit': 'circuitindex',
+							'CircuitName': 'circuitname',
+							'Actuator': 'actuator',
+							'OpenTime': 'opentime',
+							'CommandGroup': 'commandgroup',
+							'Class': 'Door',
+						}
+					case 'Scoop':
+						return {
+							'Name': 'itemname',
+							'FixedRate': 'fixedrate',
+							'CurveRate': 'curverate',
+							'ContactPoint': 'contactpoint',
+							'Class': 'Scoop',
+						}
+			}
+			break;
 		}
 	}
 }

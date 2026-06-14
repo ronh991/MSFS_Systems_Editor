@@ -78,6 +78,7 @@
 <script>
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -108,6 +109,13 @@ export default defineComponent({
 
         const sType = ref();
 
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
+
         const supplierTypeOptions = readonly([
             'AC',
             'DC',
@@ -136,24 +144,25 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    vrms: vrms.value || '',
-                    phase: phase.value || '',
-                    powerrating: powerrating.value || '',
-                    powerfactor: powerfactor.value || '',
-                    frequency: frequency.value || '',
-                    governedrpm: governedrpm.value || '',
-                    governedrpmratio: governedrpmratio.value || '',
-                    referencerpm: referencerpm.value || '',
-                    referencefrequency: referencefrequency.value || '',
-                    numberofpoles: numberofpoles.value || '',
-                    tensiondroprpm: tensiondroprpm.value || '',
-                    batterytype: batterytype.value || '',
-                    sType: sType.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        vrms: vrms.value || '',
+                        phase: phase.value || '',
+                        powerrating: powerrating.value || '',
+                        powerfactor: powerfactor.value || '',
+                        frequency: frequency.value || '',
+                        governedrpm: governedrpm.value || '',
+                        governedrpmratio: governedrpmratio.value || '',
+                        referencerpm: referencerpm.value || '',
+                        referencefrequency: referencefrequency.value || '',
+                        numberofpoles: numberofpoles.value || '',
+                        tensiondroprpm: tensiondroprpm.value || '',
+                        batterytype: batterytype.value || '',
+                        sType: sType.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }

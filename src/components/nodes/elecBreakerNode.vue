@@ -16,9 +16,9 @@
                 <el-select v-model="tripcurvetype" df-tripcurvetype @change="settripCurveTypeOption" placeholder="Select" size="small" clearable>
                   <el-option
                     v-for="item in tripCurveTypeOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
+                    :key="item"
+                    :label="item"
+                    :value="item"
                   />
                 </el-select>
             </el-form-item>
@@ -30,6 +30,7 @@
 <script>
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
+import { inject } from 'vue'
 
 export default defineComponent({
     components: {
@@ -47,40 +48,26 @@ export default defineComponent({
         const ratedcurrent = ref(0);
         const tripcurvetype = ref([]);
 
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+
         const tripCurveTypeOptions = readonly([
-            {
-            value: 'IEC_Sinv',
-            label: 'IEC_Sinv',
-            },
-            {
-            value: 'IEC_Vinv',
-            label: 'IEC_Vinv',
-            },
-            {
-            value: 'IEC_Einv',
-            label: 'IEC_Einv',
-            },
-            {
-            value: 'IEC_LTSinv',
-            label: 'IEC_LTSinv',
-            },
-            {
-            value: 'IEEE_Vinv',
-            label: 'IEEE_Vinv',
-            },
-            {
-            value: 'IEEE_Minv',
-            label: 'IEEE_Minv',
-            },
-            {
-            value: 'IEEE_Einv',
-            label: 'IEEE_Einv',
-            },
+            'IEC_Sinv',
+            'IEC_Vinv',
+            'IEC_Einv',
+            'IEC_LTSinv',
+            'IEEE_Vinv',
+            'IEEE_Minv',
+            'IEEE_Einv',
         ]);
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
         
         const settripCurveTypeOption = () => {
             nextTick( () => {
-                setAllParameters();
+                setAllParameters(nodeId.value);
             });
         }
 
@@ -88,13 +75,14 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    ratedcurrent: ratedcurrent.value || dataNode.value.data.name,
-                    tripcurvetype: tripcurvetype.value || dataNode.value.data.name,
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        ratedcurrent: ratedcurrent.value || '',
+                        tripcurvetype: tripcurvetype.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }

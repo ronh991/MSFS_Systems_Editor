@@ -97,6 +97,15 @@ export default defineComponent({
             });
         }
 
+        const getManagedAreas = (id) => {
+            const exportdata = df.export();
+            const areas = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Area');
+            if (areas) {
+                managedareasList.value = areas.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
+            }
+            setAllParameters(id);
+        }
+
         const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
@@ -118,15 +127,6 @@ export default defineComponent({
                 df.updateNodeDataFromId(nodeId.value, data);
                 }
             }
-        }
-
-        const getManagedAreas = (id) => {
-            const exportdata = df.export();
-            const areas = Object.entries(exportdata.drawflow.Home.data).filter(([key,node]) => node.class === 'Area');
-            if (areas) {
-                managedareasList.value = areas.map(([k,c]) => ({name: c.data.itemname === "" || c.data.itemname === undefined ? c.data.name : c.data.itemname, index: c.data.index, nodeid: c.id}));
-            }
-            setAllParameters(id);
         }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;

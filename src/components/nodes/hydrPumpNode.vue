@@ -76,13 +76,13 @@ export default defineComponent({
         const itemindex = ref('');
 
         const pumptype = ref('');
-        const modetype = ref('');
         const normalpressure = ref();
         const nominaldisplacement = ref();
         const liquidcapacity = ref();
         const engineindex = ref();
         const circuitname = ref();
         const circuitindex = ref();
+        const modetype = ref('');
         const pressurethresholdpct = ref();
         const wearandtear = ref('');
 

@@ -15,8 +15,8 @@
             <el-form-item label="Bleed" label-position="left">
                 <el-input v-model="bleed" df-bleed size="small"></el-input>
             </el-form-item>
-            <el-form-item label="Ambient" label-position="left">
-                <el-input v-model="ambient" df-ambient size="small"></el-input>
+            <el-form-item label="Ambient Bleed" label-position="left">
+                <el-input v-model="ambientbleedstaticflow" df-ambientbleedstaticflow size="small"></el-input>
             </el-form-item>
             <el-form-item v-if="openingnames === '' || openingnames === undefined" label="Opening Ind" label-position="left">
                 <el-input v-model="openingindicies" df-openingindicies size="small"></el-input>
@@ -52,7 +52,7 @@ export default defineComponent({
         // Data items
         const volume = ref();
         const bleed = ref();
-        const ambient = ref(0);
+        const ambientbleedstaticflow = ref(0);
         const openingindicies = ref();
         const openingnames = ref('');
         const packpid = ref();
@@ -80,7 +80,7 @@ export default defineComponent({
                     itemname: itemname.value || '',
                     volume: volume.value || '',
                     bleed: bleed.value || '',
-                    ambient: ambient.value || '',
+                    ambientbleedstaticflow: ambientbleedstaticflow.value || '',
                     openingindicies: openingindicies.value || '',
                     openingnames: openingnames.value || '',
                     packpid: packpid.value || '',
@@ -115,7 +115,7 @@ export default defineComponent({
             
             volume.value = dataNode.value.data.volume;
             bleed.value = dataNode.value.data.bleed;
-            ambient.value = dataNode.value.data.ambient;
+            ambientbleedstaticflow.value = dataNode.value.data.ambientbleedstaticflow;
             openingindicies.value = dataNode.value.data.openingindicies;
             openingnames.value = dataNode.value.data.openingnames;
             packpid.value = dataNode.value.data.packpid;
@@ -124,7 +124,7 @@ export default defineComponent({
        });
         
         return {
-            el, itemname, itemindex, volume, bleed, ambient, openingindicies, openingnames, packpid, packsList,
+            el, itemname, itemindex, volume, bleed, ambientbleedstaticflow, openingindicies, openingnames, packpid, packsList,
               
         }
 

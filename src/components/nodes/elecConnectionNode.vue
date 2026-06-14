@@ -9,6 +9,9 @@
             <el-form-item label="Name" label-position="left">
                 <el-input v-model="itemname" df-itemname size="small"></el-input>
             </el-form-item>
+            <el-form-item label="Name" label-position="left" v-show="false">
+                <el-input v-model="hiddennode" df-hiddennode size="small"></el-input>
+            </el-form-item>
             <el-form-item label="Components" label-position="left" size="small">
                 <el-select
                 v-model="linecomponent"               
@@ -23,7 +26,7 @@
                 >
                 <el-option
                     v-for="item in lineComponentList"
-                    :key="item.index"
+                    :key="item.nodeid"
                     :label="item.name"
                     :value="item"
                 />
@@ -37,6 +40,8 @@
 <script>
 import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick, } from 'vue'
 import nodeHeader from './nodeHeader.vue'
+import Helper from '../helper';
+import { inject } from 'vue';
 
 export default defineComponent({
     components: {
@@ -51,8 +56,24 @@ export default defineComponent({
         const itemindex = ref('');
 
         // Data items
-        const linecomponent = ref({});
-        const lineComponentList = ref([]);
+        const hiddennode = ref('hide');
+        const linecomponent = ref([]);
+        const lineComponentList = ref();
+        
+        // const linecompOptions = readonly([
+        //     'Breaker',
+        //     'Transformer',
+        //     'Diode',
+        // ]);
+
+        const helper = new Helper;
+
+        // Grab the global emitter instance
+        const emitter = inject('emitter')
+        
+        const handleUpdate = () => {
+            emitter.emit('updatenode');
+        }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
 
@@ -75,12 +96,35 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                const data = {
-                    ...dataNode.value.data, 
-                    itemname: itemname.value || '',
-                    linecomponent: linecomponent.value || '',
-                };
-                df.updateNodeDataFromId(nodeId.value, data);
+                    // if (typeof dataNode.value.data.linecomponent === "string" || (dataNode.value.data.linecomponent !== undefined && !helper.isObject(dataNode.value.data.linecomponent))) {
+                    //     // on import of cfg - node is just by name - need to make object
+                    //     // get node by name
+                    //     getlineComponentList(-1);
+                    //     let savename = dataNode.value.data.linecomponent;
+                    //     //savename can be a list comma separated.
+                    //     const linecompArray = savename.split(',');
+
+                    //     dataNode.value.data.linecomponent = [];
+                    //     linecomponent.value = [];
+                    //     linecompOptions.forEach((element) => {
+                    //         linecompArray.forEach((lc) => {
+                    //         let linecomp = helper.getNodebyName(lc, df, element);
+                    //             if (!helper.isObjectEmpty(linecomp)) {
+                    //                 dataNode.value.data.linecomponent.push(linecomp);
+                    //                 linecomponent.value.push(linecomp);
+                    //             }
+                    //         });
+                    //     });
+                    //} else {
+                        helper.checkmultiselected(dataNode.value.data.linecomponent, lineComponentList, linecomponent, df, nodeId, { linecomponent: linecomponent.value, ...dataNode.value.data }, dataNode);
+                    //}
+                    const data = {
+                        ...dataNode.value.data, 
+                        itemname: itemname.value || '',
+                        linecomponent: linecomponent.value || '',
+                    };
+                    df.updateNodeDataFromId(nodeId.value, data);
+                    handleUpdate();
                 }
             }
         }
@@ -95,16 +139,19 @@ export default defineComponent({
                 });
             })
             df.on('nodeCreated', function(id) {nextTick( () => {
-                    getlineComponentList(nodeId.value);
+                    getlineComponentList(id);
                 });
             })
             df.on('nodeRemoved', function(id) {nextTick( () => {
-                    getlineComponentList(nodeId.value);
+                    getlineComponentList(id);
                 });
             })
             
+            itemname.value = dataNode.value.data.itemname;
             itemindex.value = dataNode.value.data.index;
+
             linecomponent.value = dataNode.value.data.linecomponent;
+            hiddennode.value = dataNode.value.data.hiddennode;
             // get the list of linecomponent nodes - compare to list here
             //const templinecomponet = dataNode.value.data.linecomponent;
             //const exportdata = df.export();
@@ -117,7 +164,7 @@ export default defineComponent({
         });
         
         return {
-            el, itemname, itemindex, linecomponent, lineComponentList, setlineComponentOption
+            el, itemname, itemindex, hiddennode, linecomponent, lineComponentList, setlineComponentOption
               
         }
 
