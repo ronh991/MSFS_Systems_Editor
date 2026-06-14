@@ -37,6 +37,7 @@ export default class Config {
 						'FuelFlowAt1PSI': line.data.fuelflow || '',
 						'Volume': line.data.volume || '',
 						'GravityBasedFuelFlow': line.data.gravityflow || '',
+						'WearAndTearCollision': line.data.hydrlinewearandtear || '',
 					});
 					break;
 				case 1:
@@ -1190,17 +1191,18 @@ export default class Config {
 		
 		switch (sysID) {
 			case 0:
-				if (line.source) {
-					const splitToArr = (str, delim = ',') => {
-						return str.split(delim).map(i => i.trim());
-					};
-
-					helper.setgraphData(graph, line.source, line.destination);
+				if (line.fuellinesource || line.fuellinedest) {
+					helper.setgraphData(graph, line.fuellinesource, line.fuellinedest);
 				}
 				// adjust some of the data properties
 				// convert array types
 				
 				for (const [i, node] of nodes.entries()) {
+					
+					const splitToArr = (str, delim = ',') => {
+						return str.split(delim).map(i => i.trim());
+					};
+
 					if (node.data.optionlist) {
 						const options = node.data.optionlist.split(':');
 						const final = [];
@@ -1209,12 +1211,12 @@ export default class Config {
 						})
 						node.data.optionlist = final;
 					}
-					if (node.data.inputonlylines) {
-						node.data.inputonlylines = splitToArr(node.data.inputonlylines);
-					}
-					if (node.data.outputonlylines) {
-						node.data.outputonlylines = splitToArr(node.data.outputonlylines);
-					}    
+					// if (node.data.inputonlylines) {
+					// 	node.data.inputonlylines = splitToArr(node.data.inputonlylines);
+					// }
+					// if (node.data.outputonlylines) {
+					// 	node.data.outputonlylines = splitToArr(node.data.outputonlylines);
+					// }    
 					if (node.data.oneway) {
 						node.data.oneway = true;
 					}
@@ -1423,9 +1425,6 @@ export default class Config {
 				break;
 			case 3:
 				if (line.linesource || line.linedest) {
-					const splitToArr = (str, delim = ',') => {
-						return str.split(delim).map(i => i.trim());
-					};
 
 					helper.setgraphData(graph, line.linesource, line.linedest);
 					
@@ -1496,7 +1495,7 @@ export default class Config {
 						return {
 							'Name': 'itemname',
 							'Index': 'engineindex',
-							'Class': 'Engine',
+							'Class': 'FEngine',
 						}
 					case 'Tank':
 						return {
@@ -1508,7 +1507,7 @@ export default class Config {
 							'DropTimer': 'droptimer',
 							'Priority': 'priority',
 							'OutputOnlyLines': 'outputonlylines',
-							'Class': 'Tank',
+							'Class': 'FTank',
 						}
 					case 'Pump':
 						return {
@@ -1522,7 +1521,7 @@ export default class Config {
 							'AutoCondition': 'autocondition',
 							'PressureDecreaseRate': 'pressuredecrease',
 							'DestinationLine': 'oneway',
-							'Class': 'Pump',
+							'Class': 'FPump',
 						}
 					case 'Junction':
 						return {
@@ -1531,7 +1530,7 @@ export default class Config {
 							'Option': 'optionlist',
 							'InputOnlyLines': 'inputonlylines',
 							'OutputOnlyLines': 'outputonlylines',
-							'Class': 'Junction',
+							'Class': 'FJunction',
 						}
 					case 'Valve':
 						return {
@@ -1540,23 +1539,24 @@ export default class Config {
 							'DestinationLine': 'oneway',
 							'OpeningTime': 'openingtime',
 							'Circuit': 'circuitindex',
-							'Class': 'Valve',
+							'Class': 'FValve',
 						}
 					case 'APU':
 						return {
 							'Name': 'itemname',
 							'Title': 'itemtitle',
 							'FuelBurnRate': 'fuelburn',
-							'Class': 'APU',
+							'Class': 'FAPU',
 						}
 					case 'Line':
 						return {
 							'Name': 'itemname',
-							'Source': 'source',
-							'Destination': 'destination',
+							'Source': 'fuellinesource',
+							'Destination': 'fuellinedest',
 							'FuelFlowAt1PSI': 'fuelflow',
 							'Volume': 'volume',
 							'GravityBasedFuelFlow': 'gravityflow',
+							'WearAndTearCollision': 'fuellinewearandtear',
 							'Class': 'Line',
 						}
 					case 'Trigger':
@@ -1572,7 +1572,7 @@ export default class Config {
 							'EffectTrue': 'effecttrue',
 							'EffectFalse': 'effectfalse',
 							'iParam': 'iparam',
-							'Class': 'Trigger',
+							'Class': 'FTrigger',
 						}
 					case 'Burner':
 						return {

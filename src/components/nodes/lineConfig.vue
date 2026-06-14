@@ -5,6 +5,12 @@
         label-width="auto"
       >
         <div v-if="linesysID == 0" id="fuelLine" ref="properties">   
+            <el-form-item label="Source" label-position="left">
+                <el-input v-model="fuellinesource" df-fuellinesource size="small" @change="update" disabled ></el-input>
+            </el-form-item>
+            <el-form-item label="Destination" label-position="left">
+                <el-input v-model="fuellinedest" df-fuellinedest size="small" @change="update" disabled ></el-input>
+            </el-form-item>
             <el-form-item label="Fuel Flow 1psi" label-position="left">
                 <el-input v-model="fuelFlow" df-fuelflow size="small" @change="update"></el-input>
             </el-form-item>
@@ -13,6 +19,9 @@
             </el-form-item> 
             <el-form-item label="Gravity Flow" label-position="left">
                 <el-input v-model="gravityFlow" df-gravityflow size="small" @change="update"></el-input>
+            </el-form-item>
+            <el-form-item label="Wear & Tear" label-position="left">
+                <el-input v-model="fuellinewearandtear" df-fuellinewearandtear size="small" type="textarea" :rows="3" @change="update"></el-input>
             </el-form-item>
         </div>
         <div v-if="linesysID == 1" id="electricLine" ref="properties">   
@@ -197,9 +206,12 @@ export default {
         const dataModel = ref({});
         const itemname = ref('');
         //Fuel
+        const fuellinesource = ref(); //fuel too
+        const fuellinedest = ref();  // fuel too
         const fuelFlow = ref('0');
         const volume = ref('0');
         const gravityFlow = ref('0');
+        const fuellinewearandtear = ref('');
         // Electrical
         const lineconnection = ref({});
         const connectioncomponentlist = ref([])
@@ -217,8 +229,8 @@ export default {
         const hydrlinenonreturn = ref(false);
         const hydrlinewearandtear = ref('');
         // Pneumatic
-        const linesource = ref();
-        const linedest = ref();
+        const linesource = ref(); //fuel too
+        const linedest = ref();  // fuel too
         const pneumaxflow = ref();
         const pneuvalveComponentList = ref([]);
         const pneuvalvecomponent = ref([]);
@@ -535,9 +547,12 @@ export default {
             //Hyraulic
             if (props.sysID === 0) {
                 // Fuel
+                fuellinesource.value = dataModel.value.fuellinesource || '';
+                fuellinedest.value = dataModel.value.fuellinedest || '';
                 fuelFlow.value = dataModel.value.fuelflow || '';
                 volume.value = dataModel.value.volume || '' || '';
                 gravityFlow.value = dataModel.value.gravityflow || '';
+                fuellinewearandtear.value = dataModel.value.fuellinewearandtear || '';
             }
             if (props.sysID === 1) {
                 // Electrical
@@ -568,6 +583,7 @@ export default {
                 pneuvalvecomponent.value = dataModel.value.pneuvalvecomponent || '';
                 getpneulineValveList();
                 getpneulineFanList();
+                getpneulineData();
             }
             // no liquid lines
 
@@ -580,9 +596,12 @@ export default {
         function update() {
             dataModel.value.itemname = itemname.value;
             // Fuel
+            dataModel.value.fuellinesource = fuellinesource.value;
+            dataModel.value.fuellinedest = fuellinedest.value;
             dataModel.value.fuelflow = fuelFlow.value;
             dataModel.value.volume = volume.value;
             dataModel.value.gravityflow = gravityFlow.value;
+            dataModel.value.fuellinewearandtear = fuellinewearandtear.value;
             // Electrical
             dataModel.value.lineconnection = lineconnection.value;
             dataModel.value.connectioncomponentlist = connectioncomponentlist.value;
@@ -624,7 +643,7 @@ export default {
         // });
 
         return {
-            el, itemname, linesysID, fuelFlow, volume, gravityFlow, 
+            el, itemname, linesysID, fuellinesource, fuellinedest, fuelFlow, volume, gravityFlow, fuellinewearandtear,
             lineconnection, connectioncomponentlist, lineConnectionList, lineComponentList, lineinputs, 
             lineoutputs, eleclinewearandtear,
             hydraccumulatorcomponent, hydrvalvecomponent, hydrPTUComponentList, hydraccumulatorComponentList, hydrvalveComponentList, hydrlinenonreturn, hydrlinewearandtear, 
