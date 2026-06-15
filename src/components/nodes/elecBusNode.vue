@@ -9,9 +9,6 @@
             <el-form-item label="Name" label-position="left">
                 <el-input v-model="itemname" df-itemname  size="small"></el-input>
             </el-form-item>
-            <el-form-item label="Wear & Tear" label-position="left">
-                <el-input v-model="wearandtear" df-wearandtear size="small" type="textarea" :rows="3"></el-input>
-            </el-form-item>
         </div>
     </el-form>
     </div>
@@ -33,7 +30,6 @@ export default defineComponent({
         const dataNode = ref({});
         const itemname = ref('');
         const itemindex = ref('');
-        const wearandtear = ref('');
         const connections = ref([]);
 
         // Grab the global emitter instance
@@ -125,7 +121,6 @@ export default defineComponent({
                     const data = {
                         ...dataNode.value.data, 
                         itemname: itemname.value || '',
-                        wearandtear: wearandtear.value || '',
                     };
                     df.updateNodeDataFromId(nodeId.value, data);
                     handleUpdate();
@@ -146,13 +141,11 @@ export default defineComponent({
             itemname.value = dataNode.value.data.itemname;  
             itemindex.value = dataNode.value.data.index;
             
-            wearandtear.value = dataNode.value.data.wearandtear;
-
             setAllParameters(nodeId.value);
         });
         
         return {
-            el, itemname, itemindex, wearandtear, connections
+            el, itemname, itemindex, connections
         }
 
     }    

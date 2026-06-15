@@ -458,9 +458,6 @@ export default class Config {
 			}
 			break;
         case 'Bus':
-			nodeStr += this.writeNodeConfig({
-				'WearAndTearCollision': node.data.wearandtear || '',
-			});
           	break;
 		case 'Generator':
 			if (node.data.supplierCfg !== '' && node.data.supplierCfg !== undefined) {
@@ -1071,6 +1068,8 @@ export default class Config {
 			line[lineProperties[propName]] = param[1].trim();
 		}
 	});
+	// check line name has no _To_, to _to_ - set to To
+	line['itemname'] = helper.linenameCheck(line);
 	line['SysID'] = sysID;
 	return line;
   }
@@ -1236,11 +1235,11 @@ export default class Config {
 
 					if (line.lineconnection.includes('(')) {
 						const concompArray = line.lineconnection.split('(').map(row => row.split(','));
-						const conName = concompArray[0];
+						const conName = concompArray[0][0];
 						// lines seem to be trickey
 						// an object not array
 						// means the single object is displayed - uses index, not nodeid
-						line.lineconnection = (helper.getNodebyName(conName[0], graph, 'Connection'));
+						line.lineconnection = (helper.getNodebyName(conName.trim(), graph, 'Connection'));
 
 						if (line.connectioncomponentlist) {
 							let savecomponents = line.connectioncomponentlist;
@@ -1252,9 +1251,7 @@ export default class Config {
 									}
 								});
 							});
-						}
-						
-						// make a function
+						}					
 						helper.setgraphData(graph, concompArray[1][0].trim(), concompArray[1][1].replace(')','').trim());
 					} else if (line.lineconnection.includes(',')) {
 						//const conName = conArray[0];
@@ -1263,14 +1260,13 @@ export default class Config {
 							let savecomponents = line.connectioncomponentlist;
 							linecompOptions.forEach((classname) => {
 								savecomponents.forEach((lc) => {
-									let linecomp = helper.getNodebyName(lc, graph, classname);
+									let linecomp = helper.getNodebyName(lc.trim, graph, classname);
 									if (!helper.isObjectEmpty(linecomp)) {
 										line.connectioncomponentlist.push(linecomp);
 									}
 								});
 							});
 						}
-						
 						const conArray = line.lineconnection.split(',');
 						helper.setgraphData(graph, conArray[0].trim(), conArray[1].trim());
 					}
@@ -1290,20 +1286,19 @@ export default class Config {
 				for (const [i, node] of nodes.entries()) {
 					if (node.data.consumerCfg) {
 						if (!helper.isObject(node.data.consumerCfg)) {
-							let savename = node.data.consumerCfg;
+							let savename = node.data.consumerCfg.trim();
 							node.data.consumerCfg = [];
 							node.data.consumerCfg.push(helper.getNodebyName(savename, graph, 'ConsumerCfg'));
 						}
 					}
 					if (node.data.supplierCfg) {
 						if (!helper.isObject(node.data.supplierCfg)) {
-							let savename = node.data.supplierCfg;
+							let savename = node.data.supplierCfg.trim();
 							node.data.supplierCfg = [];
 							node.data.supplierCfg.push(helper.getNodebyName(savename, graph, 'SupplierCfg'));
 						}
 					}
 					if (node.data.linecomponent) {
-							
 						if (!helper.isObject(node.data.linecomponent)) {
 							let savename = node.data.linecomponent;
 							//savename can be a list comma separated.
@@ -1313,7 +1308,7 @@ export default class Config {
 							//linecomponent.value = [];
 							linecompOptions.forEach((classname) => {
 								linecompArray.forEach((lc) => {
-									let linecomp = helper.getNodebyName(lc, graph, classname);
+									let linecomp = helper.getNodebyName(lc.trim(), graph, classname);
 									if (!helper.isObjectEmpty(linecomp)) {
 										node.data.linecomponent.push(linecomp);
 										//linecomponent.value.push(linecomp);
@@ -1336,7 +1331,7 @@ export default class Config {
 					if(line.lineinputs.includes(',') || line.lineoutputs.includes(',')) {
 						// first make Combiner/Separator grouping
 						// split line name for Combiner/Separator names
-                		const combinerseparatornames = line.itemname.split("To");
+                		const combinerseparatornames = line.itemname.split('To');
 						// need to add HCombiner node
 						county = county + 3 - countx + 3;
 						countx = 1;

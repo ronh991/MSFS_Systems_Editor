@@ -352,4 +352,22 @@ export default class Helper {
             return lowest;
         }
 
+        // check line name has no _To_, to _to_ - set to To
+        linenameCheck(line) {
+            let linenameCheck = line['itemname'].split('_To_');
+            if (linenameCheck.length > 1) {
+                return linenameCheck[0] + 'To' + linenameCheck[1];
+            }
+            // matches to many names
+            // linenameCheck = line['itemname'].split('to');
+            // if (linenameCheck.length > 1) {
+            //     return linenameCheck[0] + 'To' + linenameCheck[1];
+            // }
+            linenameCheck = line['itemname'].split('_to_');
+            if (linenameCheck.length > 1) {
+                return linenameCheck[0] + 'To' + linenameCheck[1];
+            }
+            return line['itemname'];
+        }
+
 }

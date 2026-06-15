@@ -4,7 +4,7 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.96.3)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.96.4)</el-button>
       </div>
       <div>System Selected
           <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" placeholder="NONE Selected" style="width: 240px">
@@ -21,6 +21,13 @@
         <div class="subtitle"><a href="https://github.com/ronh991/MSFS_Systems_Editor">github.com/ronh991/MSFS_Systems_Editor</a></div>
       </div>
       <div class="button-group">
+        <el-switch active-text="Line Dialog Shows" inactive-text="Line Dialog Hidden" inline-prompt
+            v-model="showlineDialog"
+            @change="setshowlineDialog"
+            class="ml-2"
+            style="--el-switch-on-color: #7f449e; --el-switch-off-color: #737373"
+        />
+        <span>&nbsp;</span>
         <el-button    @click="clearNodes">Clear Nodes</el-button>
         <el-button    @click="importDialog = true; importField = ''">Import</el-button>
         <el-button    @click="exportEditor">Export Nodes</el-button>
@@ -598,6 +605,7 @@ export default {
    const instructionsDialog = ref(false);
    const systype = ref({});
    const issysIDDisabled = ref(false);
+   const showlineDialog = ref(true);
   //const sysID = ref(0);
 
    let lineListProperties = [];
@@ -692,6 +700,8 @@ export default {
           editor.value.import(importData);
           importError.value = '';
           importDialog.value = false;
+          issysIDDisabled.value = true;
+
         } 
         catch (e) {
           editor.value.import(currentData);
@@ -732,8 +742,18 @@ export default {
 
     // Line code
     function showLine(lineName) {
-      lineDialog.value = true;
-      currentLine.value = getLineListProperties(lineName) || {itemname: lineName}
+      if (showlineDialog.value) {
+        lineDialog.value = true;
+        currentLine.value = getLineListProperties(lineName) || {itemname: lineName}
+      } else {
+        lineDialog.value = false;
+      }
+    }
+
+    function setshowlineDialog() {
+      if (showlineDialog.value) {
+        showlineDialog.value=true;
+      }
     }
 
     function getLineListProperties(lineName) {
@@ -779,7 +799,6 @@ export default {
         var sysID = ev.dataTransfer.getData("sys");
         var nodeName = ev.dataTransfer.getData("nodename")
         addNodeToDrawFlow(data, ev.clientX, ev.clientY, sysID, nodeName);
-        issysIDDisabled.value = true;
       }
 
     }
@@ -936,7 +955,7 @@ export default {
       const inp = getConnections(node.inputs);
       const outp = getConnections(node.outputs);
       inp.forEach( i => {
-        const nodeida = i.node+i.input;
+        const nodeida = i.node;
         const nodeidz = key;
 
         const nodeclassa = editor.value.getNodeFromId(i.node).class;
@@ -968,7 +987,9 @@ export default {
         inputs.push(line1);
       });
     });
-    return inputs;
+    // sort lines
+    const sortedinputs = inputs.toSorted((a,b) => a.name.localeCompare(b.name));
+    return sortedinputs;
   }
 
   // drawflow connections - MSFS lines end points
@@ -1228,6 +1249,8 @@ onUnmounted(() => {
     issysIDDisabled,
     //updatenode,
     updateNode,
+    setshowlineDialog,
+    showlineDialog,
   }
 
   }
