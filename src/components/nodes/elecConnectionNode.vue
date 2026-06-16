@@ -96,28 +96,33 @@ export default defineComponent({
             // need to test for deleted nodes - cause error
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
                 if (id === nodeId.value) {
-                    // if (typeof dataNode.value.data.linecomponent === "string" || (dataNode.value.data.linecomponent !== undefined && !helper.isObject(dataNode.value.data.linecomponent))) {
-                    //     // on import of cfg - node is just by name - need to make object
-                    //     // get node by name
-                    //     getlineComponentList(-1);
-                    //     let savename = dataNode.value.data.linecomponent;
-                    //     //savename can be a list comma separated.
-                    //     const linecompArray = savename.split(',');
+                    if (typeof dataNode.value.data.linecomponent === "string" || (dataNode.value.data.linecomponent !== undefined && !helper.isObject(dataNode.value.data.linecomponent))) {
+                        const lineComponentOptions = [
+                            'Breaker',
+                            'Transformer',
+                            'Diode',
+                        ]
+                         // on import of cfg - node is just by name - need to make object
+                         // get node by name
+                    //     //////getlineComponentList(-1);
+                         let savename = dataNode.value.data.linecomponent;
+                         //savename can be a list comma separated.
+                         const linecompArray = savename.split(',');
 
-                    //     dataNode.value.data.linecomponent = [];
-                    //     linecomponent.value = [];
-                    //     linecompOptions.forEach((element) => {
-                    //         linecompArray.forEach((lc) => {
-                    //         let linecomp = helper.getNodebyName(lc, df, element);
-                    //             if (!helper.isObjectEmpty(linecomp)) {
-                    //                 dataNode.value.data.linecomponent.push(linecomp);
-                    //                 linecomponent.value.push(linecomp);
-                    //             }
-                    //         });
-                    //     });
-                    //} else {
+                         dataNode.value.data.linecomponent = [];
+                         linecomponent.value = [];
+                         lineComponentOptions.forEach((element) => {
+                             linecompArray.forEach((lc) => {
+                             let linecomp = helper.getNodebyName(lc, df.export().drawflow.Home.data, element);
+                                 if (!helper.isObjectEmpty(linecomp)) {
+                                     dataNode.value.data.linecomponent.push(linecomp);
+                                     linecomponent.value.push(linecomp);
+                                 }
+                             });
+                         });
+                    } else {
                         helper.checkmultiselected(dataNode.value.data.linecomponent, lineComponentList, linecomponent, df, nodeId, { linecomponent: linecomponent.value, ...dataNode.value.data }, dataNode);
-                    //}
+                    }
                     const data = {
                         ...dataNode.value.data, 
                         itemname: itemname.value || '',

@@ -4,10 +4,10 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.96.4)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.97.0)</el-button>
       </div>
       <div>System Selected
-          <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" placeholder="NONE Selected" style="width: 240px">
+          <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" @change="setsysID" placeholder="NONE Selected" style="width: 240px">
             <el-option
               v-for="item in systemType.slice(0,5)"
               :key="item.sysID"
@@ -37,7 +37,7 @@
   <el-container class="container" >
     <el-aside width="250px" class="column sidebar">
         <ul>
-            <li v-for="n in listNodes[ systype.sysID ]" :key="n" draggable="true" :data-node="n.item" :data-nodename="n.name" :data-sys=systype.sysID @dragstart="drag($event)" class="drag-drawflow" >
+            <li v-for="n in listNodes" :key="n" draggable="true" :data-node="n.item" :data-nodename="n.name" :data-sys=systype.sysID @dragstart="drag($event)" class="drag-drawflow" >
                 <div class="node" :class="n.item" >{{ n.name }}</div>
             </li>
         </ul>
@@ -171,7 +171,8 @@ import fuelValveNode from './nodes/fuelValveNode.vue'
 import fuelEngineNode from './nodes/fuelEngineNode.vue'
 import fuelAPUNode from './nodes/fuelAPUNode.vue'
 import fuelTriggerNode from './nodes/fuelTriggerNode.vue'
-import fuelBurnerNode from './nodes/fuelBurnerNode.vue'
+import fuelBBurnerNode from './nodes/fuelBBurnerNode.vue'
+import fuelFBurnerNode from './nodes/fuelFBurnerNode.vue'
 import fuelBurnerValveNode from './nodes/fuelBurnerValveNode.vue'
 //import fuellineConfig from './nodes/fuelLineConfig.vue'
 
@@ -242,7 +243,7 @@ export default {
     {
       sysname: 'Elec',
       label: 'Electrical',
-      version: 'Major = 2.2\nMinor = 1',
+      version: 'Major = 2\nMinor = 0',
       sysID: 1,
     },
     {
@@ -267,324 +268,9 @@ export default {
       sysname: 'Burn',
       label: 'Burner System',
       version: '',
-      sysID: 5,
+      sysID: 0,
     },
     ])
-  // list the available nodes and the input and output count
-  const listNodes = readonly([ [
-        {
-            name: 'Tank',
-            item: 'FTank',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'Pump',
-            item: 'FPump',
-            input:1,
-            output:1,
-        },
-         {
-            name: 'Junction',
-            item: 'FJunction',
-            input:1,
-            output:1,
-        },
-         {
-            name: 'FuelValve',
-            item: 'FValve',
-            input:1,
-            output:1,
-        }, 
-        {
-            name: 'Engine',
-            item: 'FEngine',
-            input:1,
-            output:0,
-        },
-        {
-            name: 'APU',
-            item: 'FAPU',
-            input:1,
-            output:0,
-        },        
-        {
-            name: 'Curve',
-            item: 'Curve',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Trigger',
-            item: 'FTrigger',
-            input:0,
-            output:0,
-        },                                
-         {
-            name: 'Burner',
-            item: 'Burner',
-            input:1,
-            output:0,
-        }, 
-         {
-            name: 'BurnerValve',
-            item: 'BValve',
-            input:1,
-            output:1,
-        }, 
-    ],
-  
-    [
-        {
-            name: 'Circuit',
-            item: 'Circuit',
-            input:1,
-            output:0,
-        },
-        {
-            name: 'Battery',
-            item: 'Battery',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'External Power',
-            item: 'ExternalPower',
-            input:0,
-            output:1,
-        },
-        {
-            name: 'Generator',
-            item: 'Generator',
-            input:0,
-            output:1,
-        },
-        {
-            name: 'Bus',
-            item: 'Bus',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'Relay',
-            item: 'Relay',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'SupplierCfg',
-            item: 'SupplierCfg',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'ConsumerCfg',
-            item: 'ConsumerCfg',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Curve',
-            item: 'Curve',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Connection',
-            item: 'Connection',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Breaker',
-            item: 'Breaker',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Transformer',
-            item: 'Transformer',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Diode',
-            item: 'Diode',
-            input:0,
-            output:0,
-        },
-    
-    ],
-  
-    [
-        {
-            name: 'Reservoir',
-            item: 'Reservoir',
-            input:-1,
-            output:1,
-        },
-        {
-            name: 'Pump',
-            item: 'HPump',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'PTU',
-            item: 'PTU',
-            input:2,
-            output:4,
-        },
-        {
-            name: 'Actuator',
-            item: 'Actuator',
-            input:1,
-            output:0,
-        },
-        {
-            name: 'Junction',
-            item: 'HJunction',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'Trigger',
-            item: 'HTrigger',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Accumulator',
-            item: 'Accumulator',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Valve',
-            item: 'HValve',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Combiner',
-            item: 'HCombiner',
-            input:1,
-            output:1,
-        },
-        {
-            name: 'Separator',
-            item: 'HSeparator',
-            input:1,
-            output:1,
-        },
-    
-    ],
-  
-    [
-       {
-            name: 'APU',
-            item: 'PAPU',
-            input:0,
-            output:1,
-        },
-       {
-            name: 'Engine',
-            item: 'PEngine',
-            input:0,
-            output:1,
-        },
-       {
-            name: 'RamAir',
-            item: 'RamAir',
-            input:0,
-            output:1,
-        },
-       {
-            name: 'Pack',
-            item: 'Pack',
-            input:1,
-            output:1,
-        },
-       {
-            name: 'MixerUnit',
-            item: 'MixerUnit',
-            input:1,
-            output:1,
-        },
-       {
-            name: 'Area',
-            item: 'Area',
-            input:1,
-            output:0,
-        },
-       {
-            name: 'Outlet',
-            item: 'Outlet',
-            input:0,
-            output:0,
-        },
-       {
-            name: 'Junction',
-            item: 'PJunction',
-            input:1,
-            output:1,
-        },
-       {
-            name: 'Valve',
-            item: 'PValve',
-            input:0,
-            output:0,
-        },
-       {
-            name: 'Fan',
-            item: 'Fan',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Parameters',
-            item: 'Parameters',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Curve',
-            item: 'Curve',
-            input:0,
-            output:0,
-        },
-    
-    ],
-  
-    [
-          {
-            name: 'Tank',
-            item: 'LTank',
-            input:0,
-            output:1,
-        },
-        {
-            name: 'Door',
-            item: 'Door',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Scoop',
-            item: 'Scoop',
-            input:0,
-            output:0,
-        },
-        {
-            name: 'Curve',
-            item: 'Curve',
-            input:0,
-            output:0,
-        },
-    
-    ],
-  ]
-)
 
    const editor = shallowRef({});
    const dialogVisible = ref(false);
@@ -606,6 +292,8 @@ export default {
    const systype = ref({});
    const issysIDDisabled = ref(false);
    const showlineDialog = ref(true);
+   const listNodes = ref([]);
+   
   //const sysID = ref(0);
 
    let lineListProperties = [];
@@ -624,6 +312,8 @@ export default {
    const internalInstance = getCurrentInstance()
    internalInstance.appContext.app._context.config.globalProperties.$df = editor;
 
+   listNodes.value = helper.getlistNodes(0);
+
     function exportEditor() {
       setSavedState();
       const nodeGraph = editor.value.export();
@@ -640,6 +330,7 @@ export default {
       const lineConfig = config_io.convertLines(lines, systype.value.sysID);
       // add lines first
       nodeConfigtemp = nodeConfigtemp + lineConfig;
+      // burner needs to be able to add to Fuel
       if (nodeConfigtemp.includes("Burner.1")) {
         nodeConfigtemp += config_io.convertBurnerNodes(nodes, lines, systype.value.sysID, systemType);
       }
@@ -664,6 +355,10 @@ export default {
       } else {
         clearConfirm.value = true;
       }
+    }
+
+    function setsysID() {
+        listNodes.value = helper.getlistNodes(systype.value.sysID);
     }
 
     function doImport(data, lineCfgdata) {
@@ -692,6 +387,8 @@ export default {
                   break;
                 case 4:
                   //Liquid nothing no lines here
+                  break;
+                case 5:
                   break;
               }
               lineDataUpdate(line);
@@ -816,7 +513,7 @@ export default {
     pos_x = pos_x * ( editor.value.precanvas.clientWidth / (editor.value.precanvas.clientWidth * editor.value.zoom)) - (editor.value.precanvas.getBoundingClientRect().x * ( editor.value.precanvas.clientWidth / (editor.value.precanvas.clientWidth * editor.value.zoom)));
     pos_y = pos_y * ( editor.value.precanvas.clientHeight / (editor.value.precanvas.clientHeight * editor.value.zoom)) - (editor.value.precanvas.getBoundingClientRect().y * ( editor.value.precanvas.clientHeight / (editor.value.precanvas.clientHeight * editor.value.zoom)));
   
-    const nodeSelected = listNodes[sysID].find(ele => ele.item == name);
+    const nodeSelected = listNodes.value.find(ele => ele.item == name);
     if (nodeSelected) {
       editor.value.addNode(nodename, nodeSelected.input,  nodeSelected.output, pos_x, pos_y, name, {}, name, 'vue');
     } else {
@@ -872,7 +569,7 @@ export default {
   }
 
   function renumberNodes() {
-    listNodes.forEach(type => {
+    listNodes.value.forEach(type => {
       const nodes = getNodesOfType(type.name);
         nodes.forEach((node, index) => {
           const itemIndex = index +1;
@@ -885,8 +582,8 @@ export default {
   // gets all MSFS nodes by system/type from the big list - associates it to drawflow node??
   function getNodesByTypes(sysid) {
     let output = [];
-    if (listNodes[sysid]) {
-      listNodes[sysid].forEach(t => {
+    if (listNodes.value) {
+      listNodes.value.forEach(t => {
         output.push({
           type: t.item, // was name
           nodes: getNodesOfType(t.item), // was name
@@ -1054,6 +751,7 @@ export default {
       }
         
        const id = document.getElementById("drawflow");
+       //listNodes.value = helper.getlistNodes(systype.value.sysID);
        // Drawflow options
        editor.useuuid = true;
 
@@ -1085,7 +783,8 @@ export default {
        editor.value.registerNode('FEngine', fuelEngineNode, {}, {});
        editor.value.registerNode('FAPU', fuelAPUNode, {}, {});
        editor.value.registerNode('FTrigger', fuelTriggerNode, {}, {});
-       editor.value.registerNode('Burner', fuelBurnerNode, {}, {});
+       editor.value.registerNode('FBurner', fuelFBurnerNode, {}, {});
+       editor.value.registerNode('BBurner', fuelBBurnerNode, {}, {});
        editor.value.registerNode('BValve', fuelBurnerValveNode, {}, {});
        // Electrical
        editor.value.registerNode('Circuit', elecCircuitNode, {}, {});
@@ -1251,6 +950,7 @@ onUnmounted(() => {
     updateNode,
     setshowlineDialog,
     showlineDialog,
+    setsysID,
   }
 
   }

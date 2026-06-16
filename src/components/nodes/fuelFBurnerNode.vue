@@ -1,6 +1,6 @@
 <template>
     <div ref="el">
-        <nodeHeader :title="itemname" nodeType="Burner" :index="itemindex" sysID="1"/>
+        <nodeHeader :title="itemname" nodeType="FBurner" :index="itemindex" sysID="1"/>
       <el-form
         label-width="auto"
       >
@@ -9,8 +9,8 @@
             <el-form-item label="Name" label-position="left">
                 <el-input v-model="itemname" df-itemname  size="small"></el-input>
             </el-form-item>
-            <el-form-item label="Pilot Light Flow" label-position="left">
-                <el-input v-model="pilotlightflowrate" df-pilotlightflowrate  size="small"></el-input>
+            <el-form-item label="Index" label-position="left">
+                <el-input v-model="burnerindex" df-pilotlightflowrate  size="small"></el-input>
             </el-form-item>
         </div>
     </el-form>
@@ -34,7 +34,7 @@ export default defineComponent({
         const itemindex = ref('');
 
         // Data items
-        const pilotlightflowrate = ref();
+        const burnerindex = ref();
 
         const setAllParameters = (id) => {
             // need to test for deleted nodes - cause error
@@ -43,7 +43,7 @@ export default defineComponent({
                 const data = {
                     ...dataNode.value.data, 
                     itemname: itemname.value || '',
-                    pilotlightflowrate: pilotlightflowrate.value || '',
+                    burnerindex: burnerindex.value || '',
                 };
                 df.updateNodeDataFromId(nodeId.value, data);
             }
@@ -65,12 +65,12 @@ export default defineComponent({
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
 
-            pilotlightflowrate.value = dataNode.value.data.pilotlightflowrate;
+            burnerindex.value = dataNode.value.data.burnerindex;
             setAllParameters(nodeId.value);
        });
         
         return {
-            el, itemname, itemindex, pilotlightflowrate, 
+            el, itemname, itemindex, burnerindex, 
               
         }
 

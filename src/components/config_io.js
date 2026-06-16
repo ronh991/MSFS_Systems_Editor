@@ -162,7 +162,7 @@ export default class Config {
 			FValve: 'Valve',
 			FJunction: 'Junction',
 			Burner: 'Burner',
-			BValve: 'Valve',
+			Bvalve: 'Valve',
 			FTrigger: 'Trigger',
 			FAPU: 'APU',
 			Curve: 'Curve',
@@ -180,8 +180,8 @@ export default class Config {
 			Connection: 'Connection',
 			Relay: 'Relay',
 			Curve: 'Curve',
-			ConsumerCfg: 'ConsumerCfg',
-			SupplierCfg: 'SupplierCfg',
+			ConsumerCfg: 'Consumer',
+			SupplierCfg: 'Supplier',
 		},
 		{
 			Reservoir: 'Reservoir',
@@ -218,7 +218,7 @@ export default class Config {
 	]
 
 	let output = '['+systemType[sysID].label.toUpperCase()+']'+'\n'+systemType[sysID].version+'\n';
-	let valvecounter = 1; // some systems have 2 different vale types
+	let valvecounter = 1; // some systems have 2 different valve types
     nodes.sort((a, b) => a.class.localeCompare(b.class)).forEach(node => {
       const inputLines = lines.filter(line => line.destination === (node.data.itemname || node.data.name)).map( line => line.name);
       const outputLines = lines.filter(line => line.source === (node.data.itemname || node.data.name)).map( line => line.name);
@@ -305,7 +305,7 @@ export default class Config {
 		case 'Burner':
 			nodeStr += `#Index:${node.data.engineindex || node.data.index} `;
 			break;
-        case 'BValve':
+        case 'Bvalve':
           break;
 		case 'ConsumerCfg':
 			if (node.data.consumerCfg !== '' && node.data.consumerCfg !== undefined) {
@@ -820,7 +820,7 @@ export default class Config {
  	const classname2paramnames = [
 		{
 			Burner: 'Burner',
-			BValve: 'Valve',
+			Bvalve: 'Valve',
 		},
 	]
 	// burner found in fuel system setup make a burner_system section at end of fuel system for use in systems.cfg
@@ -835,7 +835,7 @@ export default class Config {
 			switch (node.class) {
 				case 'Burner':
 					break;
-				case 'BValve':
+				case 'Bvalve':
 				nodeStr += this.writeNodeConfig({
 					'Burner': node.data.burner || '',
 					'MaxFlowRate': node.data.maxflowrate || '',
@@ -869,41 +869,47 @@ export default class Config {
 	let paramParts = ['','Parameters','1','Name: Common Parameters'];
   	const linesincfg = configStr.replaceAll('\\n','\n').split('\n');
 	var sysID_df = 0;
-	var found_sysID = false;
+	//var found_sysID = false;
   	linesincfg.forEach( line => {
-		if (!found_sysID) {
-			found_sysID = true;
+		//if (!found_sysID) {
+			//found_sysID = true;
 //			var sysText = line.match(/\[.]/).toUpperCase();
 			var sysText = line.match(/\[.+]/);
-			switch(sysText[0].toUpperCase()) {
-				case '[FUEL_SYSTEM]':
-					sysID_df=0;
-					break;
-				case '[ELECTRICAL]':
-					sysID_df=1;
-					break;
-				case '[HYDRAULICS_SYSTEM_EX1]':
-					sysID_df=2;
-					break;
-				case '[PNEUMATIC_SYSTEM_EX1]':
-					sysID_df=3;
-					break;
-				case '[LIQUID DROPPING SYSTEM]':
-					sysID_df=4;
-					break;
-				case '[BURNER_SYSTEM]':
-					sysID_df=0;
-					break;
-			};
-			if (sysID_df !== sysID) {
+			if(sysText !== null) {
+				switch(sysText[0].toUpperCase()) {
+					case '[FUEL_SYSTEM]':
+						sysID_df=0;
+						break;
+					case '[ELECTRICAL]':
+						sysID_df=1;
+						break;
+					case '[HYDRAULICS_SYSTEM_EX1]':
+						sysID_df=2;
+						break;
+					case '[PNEUMATIC_SYSTEM_EX1]':
+						sysID_df=3;
+						break;
+					case '[LIQUID DROPPING SYSTEM]':
+						sysID_df=4;
+						break;
+					case '[BURNER_SYSTEM]':
+						sysID_df=5;
+						break;
+				};
+			}
+			if (sysID_df !== sysID && sysID_df < 5) {
 				throw new Error(`The System Selected does not match import data: ${systemType[sysID_df].label} and ${systemType[sysID].label}`);
 			}
-		}
+		//}
 		const nodeParts = line.match(/([^\.]+)\.([^\s]+)[\s=]+(.+)$/);
 
 		if (nodeParts && nodeParts.length === 4) {
 			if (capitalizeFirstLetter(nodeParts[1].toLowerCase()) === 'Line') {
-				const parsedLine = this.parseLine(nodeParts, sysID);
+				// back to fuel for lines
+				if (sysID_df === 5) {
+					sysID_df = 0;
+				}
+				const parsedLine = this.parseLine(nodeParts, sysID_df);
 		  		if (Object.keys(parsedLine).length) {
 					lineList.push(parsedLine);
 		  		}				
@@ -912,12 +918,12 @@ export default class Config {
 				if (paramsStarted && !paramsCompleted) {
 					paramsCompleted = true;
 					paramParts[0] = paramParts[1] + paramParts[2] + paramParts[3]
-					const parsedParams = this.parseNode(paramParts, sysID)
+					const parsedParams = this.parseNode(paramParts, sysID_df)
 					if (Object.keys(parsedParams).length) {
 						nodeList.push(parsedParams);
 					}
 				}
-		  		const parsedNode = this.parseNode(nodeParts, sysID);
+		  		const parsedNode = this.parseNode(nodeParts, sysID_df);
 		  		if (Object.keys(parsedNode).length) {
 					nodeList.push(parsedNode);
 		  		}
@@ -1003,12 +1009,16 @@ export default class Config {
 			'Tank',
 			'Door',
 			'Scoop',
+		],
+		[
+			'Burner',
+			'Valve',
 		]
 
 	];
-    const sortedNodeList = nodeList.sort((a, b) => sortOrder[sysID].indexOf(a.name) - sortOrder[sysID].indexOf(b.name));
+    const sortedNodeList = nodeList.sort((a, b) => sortOrder[sysID_df].indexOf(a.name) - sortOrder[sysID_df].indexOf(b.name));
 
-  	const graph = this.processNodes(sortedNodeList, lineList, sysID);
+  	const graph = this.processNodes(sortedNodeList, lineList, sysID_df);
   	// return lineStrings;
   	return [graph, lineList];
   }
@@ -1085,6 +1095,8 @@ export default class Config {
 	var combinerIndex = 1;
 	var separatorIndex = 1;
 
+	const listNodes = helper.getlistNodes(sysID);
+
   	const graph = {
   		'drawflow': {
   			'Home': {
@@ -1093,64 +1105,6 @@ export default class Config {
   		}
   	};
 
-    // only create nodes that are allowed per system
-    const allowedNodes = [[
-			'Curve',
-			'Trigger',
-			'Tank',
-			'APU',
-			'Valve',
-			'Junction',
-			'Pump',
-			'Engine',
-		],
-		[
-			'Connection',
-			'Consumer',
-			'Supplier',
-			'Bus',
-			'Breaker',
-			'Transformer',
-			'Diode',
-			'Relay',
-			'Circuit',
-			'Battery',
-			'ExternalPower',
-			'Generator',
-		],
-		[
-			'Reservoir',
-			'Pump',
-			'Accumulator',
-			'Actuator',
-			'PTU',
-			'Junction',
-			'Trigger',
-			'Valve',
-			'Combiner',
-			'Separator',
-		],
-		[
-			'APU',
-			'Engine',
-			'RamAir',
-			'Pack',
-			'MixerUnit',
-			'Area',
-			'Outlet',
-			'Valve',
-			'Fan',
-			'Junction',
-			'Curve',
-			'Parameters',
-		],
-		[
-			'Curve',
-			'Tank',
-			'Door',
-			'Scoop',
-		]
-	];
 	// get system id first
 	// sysID = 
   	// add node to the drawflow node graph
@@ -1160,7 +1114,8 @@ export default class Config {
 	let prev_class = '';
 	let count_parameters = 0;
   	for (const [i, node] of nodes.entries()) {
-      if (allowedNodes[sysID].includes(node.name)) {
+	  const lnodes = listNodes.filter(ln => ln.name.includes(node.name))[0]
+      if (lnodes) {
 			if (node.class !== prev_class || countx > 10){
 				county = county + 3 - countx;
 				countx = 0;
@@ -1169,6 +1124,31 @@ export default class Config {
 			countx++;
 			county++;
 
+			let inputsconn = {};
+			let outputsconn = {};
+
+			if(lnodes['input'] > 0) {
+				if (lnodes['name'] !== 'PTU') {
+					inputsconn = {"input_1": {"connections": []}}
+				} else {
+					inputsconn = {"input_1": {"connections": []},
+						"input_2": {"connections": []}
+					}
+				}
+			}
+
+			if(lnodes['output'] > 0) {
+				if (lnodes['name'] !== 'PTU') {
+					outputsconn = {"output_1": {"connections": []}}
+				} else {
+					outputsconn = {"output_1": {"connections": []},
+						"output_2": {"connections": []},
+						"output_3": {"connections": []},
+						"output_4": {"connections": []},
+					}
+				}
+			}
+
     		graph.drawflow.Home.data[i] = {
     			"id": i,
     			"name": node.name,
@@ -1176,8 +1156,8 @@ export default class Config {
          		"class": node.class, /* naming things here */
             	"html": node.class,
             	"typenode": "vue",
-            	"inputs": {},
-            	"outputs": {},
+				"inputs": inputsconn,
+				"outputs": outputsconn,
             	"pos_x": countx * offset_x,
             	"pos_y": county * offset_y,
     		}
@@ -1223,7 +1203,7 @@ export default class Config {
 						if (!helper.isObject(node.data.curve)) {
 							let savename = node.data.curve;
 							node.data.curve = [];
-							node.data.curve.push(helper.getNodebyName(savename, graph, 'Curve'));
+							node.data.curve.push(helper.getNodebyName(savename, graph.drawflow.Home.data, 'Curve'));
 						}
 					}
 				}
@@ -1232,6 +1212,8 @@ export default class Config {
 				if (line.lineconnection) {
 
 					const graphNodes = Object.values(graph.drawflow.Home.data);
+					let sourceName = '';
+					let destinationName = '';
 
 					if (line.lineconnection.includes('(')) {
 						const concompArray = line.lineconnection.split('(').map(row => row.split(','));
@@ -1239,19 +1221,21 @@ export default class Config {
 						// lines seem to be trickey
 						// an object not array
 						// means the single object is displayed - uses index, not nodeid
-						line.lineconnection = (helper.getNodebyName(conName.trim(), graph, 'Connection'));
+						line.lineconnection = (helper.getNodebyName(conName.trim(), graph.drawflow.Home.data, 'Connection'));
 
 						if (line.connectioncomponentlist) {
 							let savecomponents = line.connectioncomponentlist;
 							linecompOptions.forEach((classname) => {
 								savecomponents.forEach((lc) => {
-									let linecomp = helper.getNodebyName(lc, graph, classname);
+									let linecomp = helper.getNodebyName(lc, graph.drawflow.Home.data, classname);
 									if (!helper.isObjectEmpty(linecomp)) {
 										line.connectioncomponentlist.push(linecomp);
 									}
 								});
 							});
-						}					
+						}
+						sourceName = concompArray[1][0].trim();
+						destinationName = concompArray[1][1].replace(')','').trim();
 						helper.setgraphData(graph, concompArray[1][0].trim(), concompArray[1][1].replace(')','').trim());
 					} else if (line.lineconnection.includes(',')) {
 						//const conName = conArray[0];
@@ -1260,7 +1244,7 @@ export default class Config {
 							let savecomponents = line.connectioncomponentlist;
 							linecompOptions.forEach((classname) => {
 								savecomponents.forEach((lc) => {
-									let linecomp = helper.getNodebyName(lc.trim, graph, classname);
+									let linecomp = helper.getNodebyName(lc.trim, graph.drawflow.Home.data, classname);
 									if (!helper.isObjectEmpty(linecomp)) {
 										line.connectioncomponentlist.push(linecomp);
 									}
@@ -1268,8 +1252,11 @@ export default class Config {
 							});
 						}
 						const conArray = line.lineconnection.split(',');
+						sourceName = conArray[0].trim();
+						destinationName = conArray[1].trim()
 						helper.setgraphData(graph, conArray[0].trim(), conArray[1].trim());
 					}
+					line.itemname = sourceName + 'To' + destinationName;
 				}
 
 				// adjust node properties node updates
@@ -1288,14 +1275,14 @@ export default class Config {
 						if (!helper.isObject(node.data.consumerCfg)) {
 							let savename = node.data.consumerCfg.trim();
 							node.data.consumerCfg = [];
-							node.data.consumerCfg.push(helper.getNodebyName(savename, graph, 'ConsumerCfg'));
+							node.data.consumerCfg.push(helper.getNodebyName(savename, graph.drawflow.Home.data, 'ConsumerCfg'));
 						}
 					}
 					if (node.data.supplierCfg) {
 						if (!helper.isObject(node.data.supplierCfg)) {
 							let savename = node.data.supplierCfg.trim();
 							node.data.supplierCfg = [];
-							node.data.supplierCfg.push(helper.getNodebyName(savename, graph, 'SupplierCfg'));
+							node.data.supplierCfg.push(helper.getNodebyName(savename, graph.drawflow.Home.data, 'SupplierCfg'));
 						}
 					}
 					if (node.data.linecomponent) {
@@ -1308,7 +1295,7 @@ export default class Config {
 							//linecomponent.value = [];
 							linecompOptions.forEach((classname) => {
 								linecompArray.forEach((lc) => {
-									let linecomp = helper.getNodebyName(lc.trim(), graph, classname);
+									let linecomp = helper.getNodebyName(lc.trim(), graph.drawflow.Home.data, classname);
 									if (!helper.isObjectEmpty(linecomp)) {
 										node.data.linecomponent.push(linecomp);
 										//linecomponent.value.push(linecomp);
@@ -1342,8 +1329,8 @@ export default class Config {
 							"class": 'HCombiner', /* naming things here */
 							"html": 'HCombiner',
 							"typenode": "vue",
-							"inputs": {},
-							"outputs": {},
+							"inputs": {"input_1": {"connections": []}},
+							"outputs": {"output_1": {"connections": []}},
 							"pos_x": countx * offset_x,
 							"pos_y": county * offset_y,
 						}
@@ -1358,8 +1345,8 @@ export default class Config {
 							"class": 'HSeparator', /* naming things here */
 							"html": 'HSeparator',
 							"typenode": "vue",
-							"inputs": {},
-							"outputs": {},
+							"inputs": {"input_1": {"connections": []}},
+							"outputs": {"output_1": {"connections": []}},
 							"pos_x": countx * offset_x,
 							"pos_y": county * offset_y,
 						}
@@ -1393,7 +1380,7 @@ export default class Config {
 
 					if (line.hydraccumulatorcomponent) {
 						let savecomponents = line.hydraccumulatorcomponent;
-						line.hydraccumulatorcomponent = (helper.getNodebyName(savecomponents, graph, 'Accumulator'));
+						line.hydraccumulatorcomponent = (helper.getNodebyName(savecomponents, graph.drawflow.Home.data, 'Accumulator'));
 
 					}
 
@@ -1404,7 +1391,7 @@ export default class Config {
 
 						line.hydrvalvecomponent = [];
 						linevalveArray.forEach((lv) => {
-							let linecomp = helper.getNodebyName(lv, graph, 'HValve');
+							let linecomp = helper.getNodebyName(lv, graph.drawflow.Home.data, 'HValve');
 							if (!helper.isObjectEmpty(linecomp)) {
 								line.hydrvalvecomponent.push(linecomp);
 							}
@@ -1428,7 +1415,7 @@ export default class Config {
 							if (!helper.isObject(node.data.bleedcurve)) {
 								let savename = node.data.bleedcurve;
 								node.data.bleedcurve = [];
-								node.data.bleedcurve.push(helper.getNodebyName(savename, graph, 'Curve'));
+								node.data.bleedcurve.push(helper.getNodebyName(savename, graph.drawflow.Home.data, 'Curve'));
 							}
 						}
 					}
@@ -1440,7 +1427,7 @@ export default class Config {
 
 						line.pneuvalvecomponent = [];
 						linevalveArray.forEach((lv) => {
-							let linecomp = helper.getNodebyName(lv, graph, 'PValve');
+							let linecomp = helper.getNodebyName(lv, graph.drawflow.Home.data, 'PValve');
 							if (!helper.isObjectEmpty(linecomp)) {
 								line.pneuvalvecomponent.push(linecomp);
 							}
@@ -1454,7 +1441,7 @@ export default class Config {
 
 						line.pneufancomponent = [];
 						linefanArray.forEach((lv) => {
-							let linecomp = helper.getNodebyName(lv, graph, 'Fan');
+							let linecomp = helper.getNodebyName(lv, graph.drawflow.Home.data, 'Fan');
 							if (!helper.isObjectEmpty(linecomp)) {
 								line.pneufancomponent.push(linecomp);
 							}
@@ -1572,16 +1559,8 @@ export default class Config {
 					case 'Burner':
 						return {
 							'Name': 'itemname',
-							'PilotLightFlowRate': 'pilotlightflowrate',
-							'Class': 'Burner',
-						}
-					case 'BValve':
-						return {
-							'Name': 'itemname',
-							'Burner': 'burner',
-							'MaxFlowRate': 'maxflowrate',
-							'Power': 'power',
-							'Class': 'BValve',
+							'Index': 'burnerindex',
+							'Class': 'FBurner',
 						}
 				}
 				break;
@@ -2007,6 +1986,25 @@ export default class Config {
 							'ContactPoint': 'contactpoint',
 							'Class': 'Scoop',
 						}
+			}
+			break;
+			case 5:
+				switch(nodeTypeStr) {
+					case 'Burner':
+						return {
+							'Name': 'itemname',
+							'PilotLightFlowRate': 'pilotlightflowrate',
+							'Class': 'BBurner',
+						}
+					case 'Valve':
+						return {
+							'Name': 'itemname',
+							'Burner': 'burner',
+							'MaxFlowRate': 'maxflowrate',
+							'Power': 'power',
+							'Class': 'BValve',
+						}
+
 			}
 			break;
 		}
