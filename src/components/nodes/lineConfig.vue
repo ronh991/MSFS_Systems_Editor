@@ -420,7 +420,7 @@ export default {
                         }
                     }
                 }
-                //update();
+                update();
             }
         }
 
@@ -451,7 +451,7 @@ export default {
                                 const ioNode = df.getNodeFromId(connection.node);
                                 const nodeName = ioNode.data.itemname || ioNode.data.name;
                                 connections.push({
-                                    name: isInput ? `${nodeName}_To_${selfName}` : `${selfName}_To_${nodeName}`,
+                                    name: isInput ? `${nodeName}To${selfName}` : `${selfName}To${nodeName}`,
                                     inputname: isInput1 ? `${selfName}.MotorInput` : isInput2 ? `${selfName}.PumpInput` : '',
                                     outputname: isOutput1 ? `${selfName}.MotorOutput` : isOutput2 ? `${selfName}.MotorRelief` : isOutput3 ? `${selfName}.PumpOutput` : isOutput4 ? `${selfName}.PumpRelief` : '',
                                     ...connection,
@@ -469,7 +469,7 @@ export default {
                                 const nodeName = ioNode.data.itemname || ioNode.data.name;
                                 // if an input then this is end point of connection set outputname
                                 connections.push({
-                                    name: isInput ? `${nodeName}_To_${selfName}` : `${selfName}_To_${nodeName}`,
+                                    name: isInput ? `${nodeName}To${selfName}` : `${selfName}To${nodeName}`,
                                     inputname: isInput ? `${selfName}` : '',
                                     outputname: !isInput ? `${selfName}` : '',
                                     ...connection,
