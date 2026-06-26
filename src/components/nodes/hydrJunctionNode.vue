@@ -108,7 +108,7 @@ export default defineComponent({
                 connections.value = selfCon.connections;
                 if (output_id === nodeId.value && selfCon.outputCount > 1) {
                     df.removeNodeOutput(output_id, output_class);
-                } else if(selfCon.inputCount > 1) {
+                } else if(selfCon.inputCount > 1 && input_id === nodeId.value) {
                     df.removeNodeInput(input_id, input_class);
                 }
             }
