@@ -87,7 +87,8 @@ export default class Config {
 							// }
 						}
 						if (line.data.hydraccumulatorcomponent !== undefined && line.data.hydraccumulatorcomponent !== '') {
-							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponent.map(obj => obj.name)
+							//let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponent.map(obj => obj.name)
+							let lineaccumulatorcomponentList = line.data.hydraccumulatorcomponent.name;
 							lineStr += this.writeNodeConfig({
 								'Accumulator': lineaccumulatorcomponentList || '',
 							});

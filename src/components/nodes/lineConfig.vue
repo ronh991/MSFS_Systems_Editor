@@ -568,9 +568,9 @@ export default {
                 gethydrlineValveList();
                 gethydrlineAccumulatorList();
                 gethydrlineData();
-                // was already updated in gethydrlinelist
-                lineinputs.value = dataModel.value.lineinputs || '';
-                lineoutputs.value = dataModel.value.lineoutputs || '';
+                ///// below lines were already updated in gethydrlineData
+                //lineinputs.value = dataModel.value.lineinputs || '';
+                //lineoutputs.value = dataModel.value.lineoutputs || '';
                 hydraccumulatorcomponent.value = dataModel.value.hydraccumulatorcomponent || '';
                 hydrvalvecomponent.value = dataModel.value.hydrvalvecomponent || '';
                 hydrlinenonreturn.value = dataModel.value.hydrlinenonreturn || false;
