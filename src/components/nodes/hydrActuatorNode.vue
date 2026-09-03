@@ -46,6 +46,9 @@
             <el-form-item label="Asst Pct" label-position="left">
                 <el-input v-model="assistancepct" df-assistancepct size="small"></el-input>
             </el-form-item> 
+            <el-form-item v-if="sysver === 2"  label="Drop Press" label-position="left">
+                <el-input v-model="droppressure" df-droppressure size="small"></el-input>
+            </el-form-item> 
             <el-form-item label="Wear & Tear" label-position="left">
                 <el-input v-model="wearandtear" df-wearandtear size="small" type="textarea" :rows="3"></el-input>
             </el-form-item>
@@ -59,17 +62,30 @@ import { defineComponent, onMounted, getCurrentInstance, readonly, ref, nextTick
 import nodeHeader from './nodeHeader.vue'
 import Helper from '../helper.js'
 
+// export default {
+//     props: [
+//         'lineData',
+//         'sysID'
+//     ],
+//     emits: ['update', 'closed'],
+//     setup(props, { emit }) {
+
 export default defineComponent({
     components: {
         nodeHeader
     },
-    setup() {
+    props: [
+        'sysver'
+    ],
+    setup(props) {
         const el = ref(null);
         const nodeId = ref(0);
         let df = null
         const dataNode = ref({});
         const itemname = ref('');
         const itemindex = ref('');
+
+        const sysver = ref();
 
         const actTypeOptions = readonly([
             'Elevator',
@@ -104,6 +120,7 @@ export default defineComponent({
         const mastercylinder = ref(false);
         const redundancy = ref(0);
         const assistancepct = ref(0);
+        const droppressure = ref(0);
         const wearandtear = ref();
 
         const helper = new Helper;
@@ -122,6 +139,7 @@ export default defineComponent({
 
         const setAllParameters = (id) => {
             if (Object.entries(df.export().drawflow.Home.data).filter(([key,node]) => key == nodeId.value).length > 0) {
+                let test = sysver;
                 if (id === nodeId.value) {
                 const data = {
                     ...dataNode.value.data, 
@@ -134,6 +152,7 @@ export default defineComponent({
                     mastercylinder: mastercylinder.value || false,
                     redundancy: redundancy.value || '',
                     assistancepct: assistancepct.value || '',
+                    droppressure: droppressure.value || '',
                     wearandtear: wearandtear.value || '',
                 };
                 df.updateNodeDataFromId(nodeId.value, data);
@@ -142,6 +161,7 @@ export default defineComponent({
         }
 
         df = getCurrentInstance().appContext.config.globalProperties.$df.value;
+        sysver.value = props.sysver.value.majid
 
         onMounted(async () => {
             await nextTick()
@@ -152,7 +172,8 @@ export default defineComponent({
                     setAllParameters(id);
                 });
             })
-            
+
+
             itemindex.value = dataNode.value.data.index;
             itemname.value = dataNode.value.data.itemname;
             
@@ -163,6 +184,7 @@ export default defineComponent({
             actuatortype.value = dataNode.value.data.actuatortype;
             mastercylinder.value = dataNode.value.data.mastercylinder;
             redundancy.value = dataNode.value.data.redundancy;
+            droppressure.value = dataNode.value.data.droppressure;
             assistancepct.value = dataNode.value.data.assistancepct;
             
             wearandtear.value = dataNode.value.data.wearandtear;
@@ -171,7 +193,8 @@ export default defineComponent({
        });
         
         return {
-            el, itemname, itemindex, fluidvolume, liquidcapacity, liquidconsumption, minimalpressure, actuatortype, mastercylinder, redundancy, assistancepct, wearandtear, actTypeOptions, setMasterCylinder, selectActuatorType
+            el, itemname, itemindex, fluidvolume, liquidcapacity, liquidconsumption, minimalpressure, actuatortype, mastercylinder, redundancy, assistancepct, droppressure, 
+            wearandtear, actTypeOptions, sysver, setMasterCylinder, selectActuatorType
               
         }
 

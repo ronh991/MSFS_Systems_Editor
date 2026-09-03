@@ -154,7 +154,7 @@ export default class Config {
 	return '';
   }
 
-  convertNodes(nodes, lines, sysID, systemType) {
+  convertNodes(nodes, lines, sysID, systemType, sysversion) {
 	// must match sortorder
   	const classname2paramnames = [
 		{
@@ -218,7 +218,16 @@ export default class Config {
 		},
 	]
 
-	let output = '['+systemType[sysID].label.toUpperCase()+']'+'\n'+systemType[sysID].version+'\n';
+	let output = '['+systemType[sysID].label.toUpperCase()+']'+'\n';
+
+	let version = '';
+	if(sysID !== 1) {
+		version = "Version = " + sysversion[0].label + '\n';
+	} else {
+		version = "Major = " + sysversion[1].label + '\n' + "Minor = " + sysversion[2].label + '\n';
+	}
+	output += version;
+
 	let valvecounter = 1; // some systems have 2 different valve types
     nodes.sort((a, b) => a.class.localeCompare(b.class)).forEach(node => {
       const inputLines = lines.filter(line => line.destination === (node.data.itemname || node.data.name)).map( line => line.name);
@@ -360,6 +369,11 @@ export default class Config {
 					'BatteryType': node.data.batterytype || '',
 				});
 			}
+			if (sysversion[1] === 3) {
+				nodeStr += this.writeNodeConfig({
+					'MinVoltage': node.data.minvoltage || ''
+				});
+			}
 			break;
 		case 'Circuit':
 			if (node.data.consumerCfg !== '' && node.data.consumerCfg !== undefined) {
@@ -386,6 +400,11 @@ export default class Config {
 					'Capacity': node.data.capacity || '',
 				});
 			}
+			// if (sysversion[1] === 3) {
+			// 	nodeStr += this.writeNodeConfig({
+			// 		'MinVoltage': node.data.minvoltage || ''
+			// 	});
+			// }
 			nodeStr += this.writeNodeConfig({
 				'WearAndTearCollision': node.data.wearandtear || '',
 			});
@@ -637,14 +656,21 @@ export default class Config {
             'MinimalPressure': node.data.minimalpressure || '',
             'Type': node.data.actuatortype || '',
             'Redundancy': node.data.redundancy || '',
-            'AssistancePct': node.data.assistancepct || '',
-			'WearAndTearCollision': node.data.wearandtear || '',
-          });
+            'AssistancePct': node.data.assistancepct || ''
+		  });
 		  if (node.data.mastercylinder === true) {
 			nodeStr += this.writeNodeConfig({
             	'MasterCylinder': node.data.mastercylinder || false,
-			});
+		    });
 		  }
+          if (sysversion[0] === 2) {
+			nodeStr += this.writeNodeConfig({
+              'DropPressure': node.data.droppressure || ''
+		    });
+		  }
+          nodeStr += this.writeNodeConfig({
+			'WearAndTearCollision': node.data.wearandtear || '',
+          });
 		  break;
 		case 'HCombiner':
 			nodeStr = '';
@@ -868,6 +894,10 @@ export default class Config {
 	let paramsStarted = false;
 	let paramsCompleted = false;
 	let paramParts = ['','Parameters','1','Name: Common Parameters'];
+	// vesion data
+	let versionParts = [0,0,0];
+	let versionStarted = false;
+	let versionCompleted = false;
   	const linesincfg = configStr.replaceAll('\\n','\n').split('\n');
 	var sysID_df = 0;
 	//var found_sysID = false;
@@ -924,6 +954,10 @@ export default class Config {
 						nodeList.push(parsedParams);
 					}
 				}
+				// check if verion, Major, Minor done
+				if (versionStarted && !versionCompleted) {
+					versionCompleted = true;
+				}
 		  		const parsedNode = this.parseNode(nodeParts, sysID_df);
 		  		if (Object.keys(parsedNode).length) {
 					nodeList.push(parsedNode);
@@ -949,6 +983,18 @@ export default class Config {
 						paramParts[3] += '#AreasMaxTemperatureInput:' + lineparts[1];
 						break;
 				}
+			} else if (line.includes('Version')) {
+				versionStarted = true;
+				const lineparts = line.split('=');
+				versionParts[0] = lineparts[1];
+			} else if (line.includes('Major')) {
+				versionStarted = true;
+				const lineparts = line.split('=');
+				versionParts[1] = lineparts[1];
+			} else if (line.includes('Minor')) {
+				versionStarted = true;
+				const lineparts = line.split('=');
+				versionParts[2] = lineparts[1];
 			}
 		}
   	});
@@ -1020,8 +1066,10 @@ export default class Config {
     const sortedNodeList = nodeList.sort((a, b) => sortOrder[sysID_df].indexOf(a.name) - sortOrder[sysID_df].indexOf(b.name));
 
   	const graph = this.processNodes(sortedNodeList, lineList, sysID_df);
+
+	const version = versionParts;
   	// return lineStrings;
-  	return [graph, lineList];
+  	return [graph, lineList, version];
   }
 
   parseNode(nodeParts, sysID) {
@@ -1781,6 +1829,7 @@ export default class Config {
 							'MasterCylinder': 'mastercylinder',
 							'Redundancy': 'redundancy',
 							'AssistancePct': 'assistancepct',
+							'DropPressure': 'droppressure',
 							'WearAndTearCollision': 'wearandtear',
 							'Class': 'Actuator',
 						}

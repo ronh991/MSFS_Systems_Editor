@@ -4,7 +4,7 @@
   <el-header class="header">
       
       <div class="instructions">
-        <el-button @click="instructionsDialog = true" plain>Instructions (0.97.3)</el-button>
+        <el-button @click="instructionsDialog = true" plain>Instructions (0.97.6)</el-button>
       </div>
       <div>System Selected
           <el-select v-model="systype" value-key="sysID" :disabled="issysIDDisabled" @change="setsysID" placeholder="NONE Selected" style="width: 240px">
@@ -15,7 +15,31 @@
               :value="item"
             />
           </el-select>
+      </div>Version
+      <div>
+          <el-select v-model="sysver" value-key="majid" :disabled="issysIDDisabled" placeholder="ver maj" style="width: 74px">
+      <div v-for="itemsysID in systemVer[systype.sysID]" :key="itemsysID.sysver" :value="itemsysID.sysver">
+            <el-option
+              v-for="item2 in itemsysID"
+              :key="item2.majid"
+              :label="item2.label"
+              :value="item2"
+            />
       </div>
+          </el-select>
+      </div>
+      <div>
+          <el-select v-model="sysvermin" value-key="minid" :disabled="issysverminDisabled" placeholder="ver min" style="width: 64px">
+      <div v-for="itemsysIDmin in systemVerMin[systype.sysID]" :key="itemsysIDmin.sysvermin" :value="itemsysIDmin.sysvermin">
+            <el-option
+              v-for="item3 in itemsysIDmin"
+              :key="item3.minid"
+              :label="item3.label"
+              :value="item3"
+            />
+      </div>
+          </el-select>
+          </div>
       <div>
         <h3>Systems Editor for MSFS 2024</h3>
         <div class="subtitle"><a href="https://github.com/ronh991/MSFS_Systems_Editor">github.com/ronh991/MSFS_Systems_Editor</a></div>
@@ -36,10 +60,13 @@
   </el-header>
   <el-container class="container" >
     <el-aside width="250px" class="column sidebar">
-        <ul>
+        <ul v-if="sysver.majid !== undefined">
             <li v-for="n in listNodes" :key="n" draggable="true" :data-node="n.item" :data-nodename="n.name" :data-sys=systype.sysID @dragstart="drag($event)" class="drag-drawflow" >
                 <div class="node" :class="n.item" >{{ n.name }}</div>
             </li>
+        </ul>
+        <ul v-else>
+            Select a version for the System
         </ul>
         <div class="node-list">
           <div v-for="list in nodesByType" :key="list.type" class="list">
@@ -272,6 +299,49 @@ export default {
     },
     ])
 
+    // systemType Options
+    const systemVer = readonly([
+    {
+      sysver: [{majid:1,label:'1'},{majid:2,label:'2'},{majid:3,label:'3'},{majid:4,label:'4'},{majid:5,label:'5'},{majid:6,label:'6'},{majid:7,label:'7'},{majid:8,label:'8'},{majid:99,label:'latest'}],
+    },
+    {
+      sysver: [{majid:1,label:'1'},{majid:2,label:'2'}],
+    },
+    {
+      sysver: [{majid:1,label:'1'},{majid:2,label:'2'},{majid:99,label:'latest'}],
+    },
+    {
+      sysver: [{majid:1,label:'1'},{majid:2,label:'2'},{majid:99,label:'latest'}],
+     },
+    {
+      sysver: [{majid:1,label:''}],
+     },
+    {
+      sysver: [{majid:1,label:''}],
+     },
+    ])
+    // systemType Options
+    const systemVerMin = readonly([
+    {
+      sysvermin: [{minid:1, label:''}]
+    },
+    {
+      sysvermin: [{minid:1, label:'0'},{minid:2,label:'1'},{minid:3,label:'2'},{minid:4,label:'3'}]
+    },
+    {
+      sysvermin: [{minid:1, label:''}]
+    },
+    {
+      sysvermin: [{minid:1, label:''}]
+     },
+    {
+      sysvermin: [{minid:1, label:''}]
+     },
+    {
+      sysvermin: [{minid:1, label:''}]
+     },
+    ])
+
    const editor = shallowRef({});
    const dialogVisible = ref(false);
    const dialogData = ref({});
@@ -290,7 +360,10 @@ export default {
    const currentLine = ref({});
    const instructionsDialog = ref(false);
    const systype = ref({});
+   const sysver = ref({});
+   const sysvermin = ref({});
    const issysIDDisabled = ref(false);
+   const issysverminDisabled = ref(true);
    const showlineDialog = ref(true);
    const listNodes = ref([]);
    
@@ -312,7 +385,7 @@ export default {
    const internalInstance = getCurrentInstance()
    internalInstance.appContext.app._context.config.globalProperties.$df = editor;
 
-   listNodes.value = helper.getlistNodes(0);
+   //listNodes.value = helper.getlistNodes(0);
 
     function exportEditor() {
       setSavedState();
@@ -326,7 +399,7 @@ export default {
       const exp = editor.value.export();
       const nodes = Object.values(exp.drawflow.Home.data);
       const lines = getConfigState();
-      let nodeConfigtemp = config_io.convertNodes(nodes, lines, systype.value.sysID, systemType);
+      let nodeConfigtemp = config_io.convertNodes(nodes, lines, systype.value.sysID, systemType, [sysver.value, sysver.value, sysvermin.value]);
       const lineConfig = config_io.convertLines(lines, systype.value.sysID);
       // add lines first
       nodeConfigtemp = nodeConfigtemp + lineConfig;
@@ -349,7 +422,10 @@ export default {
         systype.value = systemType[0];
         clearConfirm.value = false;
         issysIDDisabled.value = false;
+        issysverminDisabled.value = true;
         lineDialog.value = false;
+        sysver.value = '';
+        sysvermin.value = '';
         lineListProperties = [];
         setSavedState();
       } else {
@@ -359,6 +435,29 @@ export default {
 
     function setsysID() {
         listNodes.value = helper.getlistNodes(systype.value.sysID);
+        switch (systype.value.sysID) {
+                case 0:
+                  issysverminDisabled.value = true;
+                  break;
+                case 1:
+                  issysverminDisabled.value = false;
+                  break;
+                case 2:
+                  issysverminDisabled.value = true;
+                  break;
+                case 3:
+                  issysverminDisabled.value = true;
+                  break;
+                case 4:
+                  //Liquid nothing no lines here
+                  issysverminDisabled.value = true;
+                  break;
+                case 5:
+                  issysverminDisabled.value = true;
+                  break;
+        }
+        sysver.value = []
+        sysvermin.value = []
     }
 
     function doImport(data, lineCfgdata) {
@@ -398,7 +497,6 @@ export default {
           importError.value = '';
           importDialog.value = false;
           issysIDDisabled.value = true;
-
         } 
         catch (e) {
           editor.value.import(currentData);
@@ -414,6 +512,13 @@ export default {
           const result = config_io.importConfig(fieldStr, systype.value.sysID, systemType);
           lineListProperties = result[1];
           importConfigField.value = '';
+          // result[2] has version, major, minor
+          if (result[2][0] !== 0) {
+            sysver.value = result[2][0];
+          } else if (result[2][1] !== 0) {
+            sysver.value = result[2][1];
+          }
+          sysvermin.value = result[2][2];
           doImport(result[0], result[1]);
         }
         catch(e) {
@@ -605,10 +710,22 @@ export default {
         // depends on system
         localStorage.setItem('fuelSystemLines', JSON.stringify(lineListProperties));
         localStorage.setItem('fuelSystemGraph', JSON.stringify(exportdata));
+        // if there are nodes diable the sysID dropdowm
+        if (!helper.isObjectEmpty(exportdata.drawflow.Home.data)) {
+          issysIDDisabled.value = true;
+        }
       }
       if (systype.value.sysID != null) {
         localStorage.setItem('fuelSystemType', JSON.stringify(systemType[systype.value.sysID]));
       }
+      if(systemVer[systype.value.sysID].sysver[sysver.value.majid] != null){
+        localStorage.setItem('fuelSystemVersion', JSON.stringify(sysver.value.majid));
+      }
+      if(systemVerMin[systype.value.sysID].sysvermin[sysvermin.value.minid] != null){
+        localStorage.setItem('fuelSystemVersionMinor', JSON.stringify(sysvermin.value.minid));
+      }
+      listNodes.value = helper.getlistNodes(systype.value.sysID);
+
     //}
   }
 
@@ -738,6 +855,25 @@ export default {
         systype.value = systemType[0];
       }
 
+      const savedSystemVersion = localStorage.getItem('fuelSystemVersion');
+      if (savedSystemVersion !== "undefined") {
+          const parsedSystemVersion = JSON.parse(savedSystemVersion);
+          for (const [key, value] of Object.entries(systemVer[systype.value.sysID].sysver) ) { 
+            if (parsedSystemVersion === value.majid) {
+              sysver.value = value;
+            }
+          };
+      }
+      const savedSystemVersionMinor = localStorage.getItem('fuelSystemVersionMinor');
+      if (savedSystemVersionMinor !== "undefined") {
+          const parsedSystemVersion = JSON.parse(savedSystemVersionMinor);
+          for (const [key, value] of Object.entries(systemVerMin[systype.value.sysID].sysvermin) ) { 
+            if (parsedSystemVersion === value.minid) {
+              sysvermin.value = value;
+            }
+          };
+      }
+
       // set up event listeners on the graph
       var elements = document.getElementsByClassName('drag-drawflow');
       for (var i = 0; i < elements.length; i++) {
@@ -806,7 +942,7 @@ export default {
        editor.value.registerNode('HJunction', hydrJunctionNode, {}, {});
        editor.value.registerNode('HCombiner', hydrCombinerNode, {}, {});
        editor.value.registerNode('HSeparator', hydrSeparatorNode, {}, {});
-       editor.value.registerNode('Actuator', hydrActuatorNode, {}, {});
+       editor.value.registerNode('Actuator', hydrActuatorNode, {sysver}, {});
        editor.value.registerNode('Accumulator', hydrAccumulatorNode, {}, {});
        editor.value.registerNode('HTrigger', hydrTriggerNode, {}, {});
        editor.value.registerNode('HValve', hydrValveNode, {}, {});
@@ -919,6 +1055,10 @@ onUnmounted(() => {
     exportConfig, 
     systemType, 
     systype,
+    sysver,
+    sysvermin,
+    systemVer,
+    systemVerMin,
     listNodes, 
     drag, 
     drop, 
@@ -946,6 +1086,7 @@ onUnmounted(() => {
     instructionsDialog,
     lineComponentNodeNamesList,
     issysIDDisabled,
+    issysverminDisabled,
     //updatenode,
     updateNode,
     setshowlineDialog,

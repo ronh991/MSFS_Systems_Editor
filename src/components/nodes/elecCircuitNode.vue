@@ -66,6 +66,9 @@
                 <el-form-item label="Volt" label-position="left">
                     <el-input v-model="voltage" df-voltage size="small"></el-input>
                 </el-form-item>
+                <el-form-item v-if="sysvermin === 3" label="Min Volt" label-position="left">
+                    <el-input v-model="minvoltage" df-minvoltage size="small"></el-input>
+                </el-form-item>
                 <el-form-item label="Watt" label-position="left">
                     <el-input v-model="wattage" df-wattage size="small"></el-input>
                 </el-form-item>
@@ -134,6 +137,7 @@ export default defineComponent({
         const wearandtear = ref('');
         const capacity = ref();
         const chargecrate = ref();
+        const minvoltage = ref();
 
         const consumerCfg = ref('');
         const consumerList = ref([]);
@@ -283,6 +287,7 @@ export default defineComponent({
                         resistancemax: resistancemax.value || '',
                         capacity: capacity.value || '',
                         chargecrate: chargecrate.value || '',
+                        minvoltage: minvoltage.value || '',
                         wearandtear: wearandtear.value || '',
                     };
                     df.updateNodeDataFromId(nodeId.value, data);
@@ -325,13 +330,14 @@ export default defineComponent({
             resistancemax.value = dataNode.value.data.resistancemax;
             wearandtear.value = dataNode.value.data.wearandtear;
             capacity.value = dataNode.value.data.capacity;
+            minvoltage.value = dataNode.value.data.minvoltage;
             chargecrate.value = dataNode.value.data.chargecrate;
 
             getConsumers(nodeId.value);
         });
         
         return {
-            el, itemname, itemindex, circuittype, consumerCfg, cType, amperage, voltage, wattage, resistance, resistancemin, resistancemax, wearandtear, capacity, chargecrate, consumerList, circuitTypeOptions, consumerTypeOptions,
+            el, itemname, itemindex, circuittype, consumerCfg, cType, amperage, voltage, wattage, resistance, resistancemin, resistancemax, wearandtear, capacity, chargecrate, consumerList, circuitTypeOptions, consumerTypeOptions, minvoltage,
             setConsumerCfgOption, setConsumerTypeOption, setCircuitTypeOption,
             //updatenode
         }
