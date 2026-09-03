@@ -66,9 +66,6 @@
                 <el-form-item label="Volt" label-position="left">
                     <el-input v-model="voltage" df-voltage size="small"></el-input>
                 </el-form-item>
-                <el-form-item v-if="sysvermin === 3" label="Min Volt" label-position="left">
-                    <el-input v-model="minvoltage" df-minvoltage size="small"></el-input>
-                </el-form-item>
                 <el-form-item label="Watt" label-position="left">
                     <el-input v-model="wattage" df-wattage size="small"></el-input>
                 </el-form-item>

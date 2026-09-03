@@ -24,6 +24,9 @@
             <el-form-item label="Volt" label-position="left">
                 <el-input v-model="voltage" df-voltage size="small"></el-input>
             </el-form-item>
+            <el-form-item v-if="sysvermin === 3" label="Min Volt" label-position="left">
+                <el-input v-model="minvoltage" df-minvoltage size="small"></el-input>
+            </el-form-item>
             <el-form-item label="Watt" label-position="left">
                 <el-input v-model="wattage" df-wattage size="small"></el-input>
             </el-form-item>
@@ -69,6 +72,7 @@ export default defineComponent({
         // data Items
         const amperage = ref();
         const voltage = ref();
+        const minvoltage = ref();
         const wattage = ref(0);
         const resistance = ref();
         const resistancemin = ref();
@@ -105,6 +109,7 @@ export default defineComponent({
                         itemname: itemname.value || '',
                         amperage: amperage.value || '',
                         voltage: voltage.value || '',
+                        minvoltage: minvoltage.value || '',
                         cType: cType.value || '',
                         wattage: wattage.value || '',
                         resistance: resistance.value || '',
@@ -137,6 +142,7 @@ export default defineComponent({
             cType.value = dataNode.value.data.cType;
             amperage.value = dataNode.value.data.amperage;
             voltage.value = dataNode.value.data.voltage;
+            minvoltage.value = dataNode.value.data.minvoltage;
             wattage.value = dataNode.value.data.wattage;
             resistance.value = dataNode.value.data.resistance;
             resistancemin.value = dataNode.value.data.resistancemin;
@@ -148,7 +154,7 @@ export default defineComponent({
         });
         
         return {
-            el, itemname, itemindex, cType, amperage, voltage, wattage, resistance, resistancemin, resistancemax, capacity, chargecrate, consumerTypeOptions, selectConsumerType,
+            el, itemname, itemindex, cType, amperage, voltage, minvoltage, wattage, resistance, resistancemin, resistancemax, capacity, chargecrate, consumerTypeOptions, selectConsumerType,
         }
 
     }    
