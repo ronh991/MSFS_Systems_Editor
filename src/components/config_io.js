@@ -400,11 +400,11 @@ export default class Config {
 					'Capacity': node.data.capacity || '',
 				});
 			}
-			// if (sysversion[1] === 3) {
-			// 	nodeStr += this.writeNodeConfig({
-			// 		'MinVoltage': node.data.minvoltage || ''
-			// 	});
-			// }
+			if (sysversion[1] === 3) {
+				nodeStr += this.writeNodeConfig({
+					'MinVoltage': node.data.minvoltage || ''
+				});
+			}
 			nodeStr += this.writeNodeConfig({
 				'WearAndTearCollision': node.data.wearandtear || '',
 			});

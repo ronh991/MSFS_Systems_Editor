@@ -66,6 +66,9 @@
                 <el-form-item label="Volt" label-position="left">
                     <el-input v-model="voltage" df-voltage size="small"></el-input>
                 </el-form-item>
+                <el-form-item label="MinVoltage" label-position="left">
+                    <el-input v-model="minvoltage" df-minvoltage size="small"></el-input>
+                </el-form-item>
                 <el-form-item label="Watt" label-position="left">
                     <el-input v-model="wattage" df-wattage size="small"></el-input>
                 </el-form-item>
@@ -126,6 +129,7 @@ export default defineComponent({
         // Data items
         const amperage = ref();
         const voltage = ref();
+        const minvoltage = ref();
         const wattage = ref();
         const resistance = ref();
         const resistancemin = ref();
@@ -134,7 +138,6 @@ export default defineComponent({
         const wearandtear = ref('');
         const capacity = ref();
         const chargecrate = ref();
-        const minvoltage = ref();
 
         const consumerCfg = ref('');
         const consumerList = ref([]);
@@ -277,6 +280,7 @@ export default defineComponent({
                         circuittype: circuittype.value || '',
                         amperage: amperage.value || '',
                         voltage: voltage.value || '',
+                        minvoltage: minvoltage.value || '',
                         cType: cType.value || '',
                         wattage: wattage.value || '',
                         resistance: resistance.value || '',
@@ -284,7 +288,6 @@ export default defineComponent({
                         resistancemax: resistancemax.value || '',
                         capacity: capacity.value || '',
                         chargecrate: chargecrate.value || '',
-                        minvoltage: minvoltage.value || '',
                         wearandtear: wearandtear.value || '',
                     };
                     df.updateNodeDataFromId(nodeId.value, data);
@@ -334,7 +337,7 @@ export default defineComponent({
         });
         
         return {
-            el, itemname, itemindex, circuittype, consumerCfg, cType, amperage, voltage, wattage, resistance, resistancemin, resistancemax, wearandtear, capacity, chargecrate, consumerList, circuitTypeOptions, consumerTypeOptions, minvoltage,
+            el, itemname, itemindex, circuittype, consumerCfg, cType, amperage, voltage, minvoltage, wattage, resistance, resistancemin, resistancemax, wearandtear, capacity, chargecrate, consumerList, circuitTypeOptions, consumerTypeOptions,
             setConsumerCfgOption, setConsumerTypeOption, setCircuitTypeOption,
             //updatenode
         }
