@@ -89,8 +89,8 @@ export default defineComponent({
 
         const actTypeOptions = readonly([
             'Elevator',
-            'LeftAileron',
-            'RightAileron',
+            'LeftAilerons',
+            'RightAilerons',
             'Rudder',
             'Spoilers',
             'Brakes',
